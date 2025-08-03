@@ -1,0 +1,37 @@
+Template: asus-screen-toggle/primary_display
+Type: select
+Choices: ${Choices}
+Default: ""
+Description: Choose your primary display output
+
+Template: asus-screen-toggle/secondary_display
+Type: select
+Choices: ${Choices}
+Default: ""
+Description: Choose your secondary display output
+
+Template: asus-screen-toggle/lid
+Type: select
+Choices: ${Choices}
+Default: ""
+Description: Zvolte zařízení víka (lid), které indikuje zavření notebooku
+
+Template: asus-screen-toggle/usb_kb_notice
+Type: note
+Description: Připojte/dokujte prosím externí klávesnici. Jakmile ji připojíte, pokračujte stiskem OK.
+
+Template: asus-screen-toggle/usb_keyboard
+Type: select
+Choices: ${Choices}
+Default: ""
+Description: Vyberte externí klávesnici, která bude sloužit pro přepínání displeje.
+
+Template: asus-screen-toggle/autostart_skel
+Type: boolean
+Default: true
+Description: Přidat kontrolu po spouštění do výchozího profilu (/etc/skel)?
+
+Template: asus-screen-toggle/autostart_existing
+Type: boolean
+Default: true
+Description: Přidat kontrolu po spouštění do existujících uživatelských účtů?

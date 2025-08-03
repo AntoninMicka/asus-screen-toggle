@@ -1,0 +1,8 @@
+Package: asus-screen-toggle
+Version: 0.0.5
+Section: misc
+Priority: optional
+Architecture: all
+Maintainer: Antonin Micka <antonin.micka@email.cz>
+Description: Auto toggle spodního displeje ASUS Zenbook Duo podle připojení klávesnice
+Depends: debconf, systemd, usbutils, kscreen, udev, console-setup, x11-xserver-utils

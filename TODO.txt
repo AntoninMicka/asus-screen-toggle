@@ -1,0 +1,2 @@
+detekce otevreni/zavreni vika pres udev
+omezit vypisy

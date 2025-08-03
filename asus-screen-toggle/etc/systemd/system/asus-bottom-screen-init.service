@@ -1,0 +1,15 @@
+[Unit]
+Description=ASUS Duo – zapni spodní displej, pokud je klávesnice připojena
+After=sddm.service
+Requires=sddm.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/asus-check-rotation.sh
+Restart=on-failure
+RemainAfterExit=true
+ExecReload=/usr/local/bin/asus-check-keyboard-system.sh
+ExecStop=/usr/local/bin/asus-check-keyboard-system.sh
+
+[Install]
+WantedBy=default.target

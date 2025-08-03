@@ -1,0 +1,133 @@
+#!/bin/sh -e
+. /usr/share/debconf/confmodule
+
+echo config_begin
+# Detekuj dostupné výstupy
+CHOICES=$(for entry in /sys/class/drm/*/status; do
+    if [ -f "$entry" ] && grep -q '^connected$' "$entry"; then
+        name=$(basename "$(dirname "$entry")" | sed 's/^card[0-9]-//; s/-A-/-/')
+        echo "$name"
+    fi
+done | sort -u)
+
+# Pokud je prázdný, nastav fallback
+if [ -z "$CHOICES" ]; then
+    CHOICES_LIST="none - Žádné připojené výstupy"
+else
+    CHOICES_LIST=$(echo "$CHOICES" | paste -sd "," - | sed 's/,/, /g')
+fi
+
+PRIMARY_DEFAULT=""
+SECONDARY_DEFAULT=""
+
+echo $DEBIAN_FRONTEND
+if [ -z "$CHOICES" ]; then
+    echo "⚠️  Žádné výstupy nebyly detekovány, použiji fallback"
+    CHOICES_LIST="eDP-1, eDP-2"
+    PRIMARY_DEFAULT="eDP-1"
+    SECONDARY_DEFAULT="eDP-2"
+else
+    OUTPUTS=$(echo $CHOICES | tr ", " "\n")
+    PRIMARY_DEFAULT=$(echo "$OUTPUTS" | sed -n 1p)
+    SECONDARY_DEFAULT=$(echo "$OUTPUTS" | sed -n 2p)
+
+    echo /$CHOICES/$OUTPUTS/$PRIMARY_DEFAULT/$SECONDARY_DEFAULT/
+
+    # Zajištění fallbacku, pokud je jen jeden výstup
+    #[ -z "$SECONDARY_DEFAULT" ] && SECONDARY_DEFAULT="$PRIMARY_DEFAULT"
+fi
+
+echo /$CHOICES/$CHOICES_LIST/$OUTPUTS/$PRIMARY_DEFAULT/$SECONDARY_DEFAULT/
+
+echo primary_display
+db_fset asus-screen-toggle/primary_display seen false
+db_reset asus-screen-toggle/primary_display
+# Nastav Choices pro obě otázky
+db_subst asus-screen-toggle/primary_display Choices $CHOICES_LIST
+# Nastav výchozí hodnoty
+db_set asus-screen-toggle/primary_display "$PRIMARY_DEFAULT"
+# Zobrazit obě otázky
+db_input medium asus-screen-toggle/primary_display || true
+db_go
+
+echo secondary_display
+db_fset asus-screen-toggle/secondary_display seen false
+db_reset asus-screen-toggle/secondary_display
+# Nastav Choices pro obě otázky
+db_subst asus-screen-toggle/secondary_display Choices $CHOICES_LIST
+# Nastav výchozí hodnoty
+db_set asus-screen-toggle/secondary_display "$SECONDARY_DEFAULT"
+# Zobrazit obě otázky
+db_input medium asus-screen-toggle/secondary_display || true
+db_go
+
+CHOICES=$(find /proc/acpi/button/lid/ -mindepth 1 -maxdepth 1 -type d -printf "%f\n" | paste -sd ", " -)
+[ -n "$CHOICES" ] || CHOICES="none - Nenalezeno"
+DEFAULT=$(echo "$CHOICES" | cut -d',' -f1)
+
+# Zobrazíme detekované možnosti pro ladění
+echo "Detekované víko/víka: $CHOICES, výchozí: $DEFAULT"
+
+echo lid
+db_fset asus-screen-toggle/lid seen false
+db_reset asus-screen-toggle/lid
+# Nastav Choices pro obě otázky
+db_subst asus-screen-toggle/lid Choices $CHOICES
+# Nastav výchozí hodnoty
+db_set asus-screen-toggle/lid "$DEFAULT"
+# Zobrazit obě otázky
+db_input medium asus-screen-toggle/lid || true
+db_go
+
+echo keyboard
+
+db_title "Nastavení externí klávesnice"
+
+# Zobraz informační hlášení
+db_input high asus-screen-toggle/usb_kb_notice || true
+db_go
+
+# Detekuj USB HID zařízení (klávesnice)
+CHOICES=$(lsusb | grep -iE 'keyboard|hid' | sed 's/,//g' | \
+    awk '/ID/ {
+        split($6, id, ":");
+        vidpid = id[1] ":" id[2];
+        desc = substr($0, index($0, $7));
+        print vidpid " - " desc
+    }' | sort)
+
+# Pokud žádné zařízení nenalezeno, přidej placeholder
+if [ -z "$CHOICES" ]; then
+    CHOICES="none - Žádné zařízení nenalezeno"
+fi
+
+# Pro debconf: seznam volených možností, oddělených čárkou a mezerou
+CHOICES_LIST=$(echo "$CHOICES" | paste -sd "," - | sed 's/,/, /g')
+
+# První položka jako výchozí hodnota
+DEFAULT=$(echo "$CHOICES" | head -n1)
+
+echo "CHOICES_LIST: $CHOICES_LIST"
+echo "DEFAULT: $DEFAULT"
+
+# Předat možnosti do debconf
+db_fset asus-screen-toggle/usb_keyboard seen false
+db_reset asus-screen-toggle/usb_keyboard
+
+db_subst asus-screen-toggle/usb_keyboard Choices "$CHOICES_LIST"
+db_set asus-screen-toggle/usb_keyboard "$DEFAULT"
+# Zobrazit výběr
+db_input medium asus-screen-toggle/usb_keyboard || true
+db_go
+
+db_get asus-screen-toggle/usb_keyboard
+echo ">>> V config vybráno: $RET" >&2
+
+echo autostart check
+db_input medium asus-screen-toggle/autostart_skel || true
+db_go
+
+db_input medium asus-screen-toggle/autostart_existing || true
+db_go
+
+echo config_done
