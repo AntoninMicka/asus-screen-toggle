@@ -1,0 +1,10 @@
+[Unit]
+Description=Spustit můj skript po přihlášení
+After=graphical-session.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/asus-check-keyboard.sh
+
+[Install]
+WantedBy=default.target
