@@ -46,7 +46,7 @@ attempt=0
                         XDG_RUNTIME_DIR="$runtime_dir" \
                         DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
                         DIR="$DIR" \
-                    /usr/local/bin/asus-check-keyboard-user.sh
+                    /usr/bin/asus-check-keyboard-user.sh
             fi
 
             if [[ "$type" == "wayland" ]]; then
@@ -67,7 +67,7 @@ attempt=0
                         XDG_RUNTIME_DIR="$runtime_dir" \
                         DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
                         DIR="$DIR" \
-                    /usr/local/bin/asus-check-keyboard-user.sh
+                    /usr/bin/asus-check-keyboard-user.sh
             fi
 
             exit 0  # Ukončit skript po prvním nalezeném GUI uživateli

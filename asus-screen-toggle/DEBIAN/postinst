@@ -68,7 +68,7 @@ if [ "$RET" = "true" ]; then
     done
 fi
 
-/usr/local/bin/asus-check-keyboard-genrules.sh
+/usr/bin/asus-check-keyboard-genrules.sh
 
 /usr/bin/udevadm control --reload
 /usr/bin/udevadm trigger
