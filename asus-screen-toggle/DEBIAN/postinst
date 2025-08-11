@@ -77,8 +77,14 @@ fi
 
 /usr/bin/asus-check-keyboard-genrules.sh
 
-/usr/bin/udevadm control --reload
-/usr/bin/udevadm trigger
+if command -v udevadm >/dev/null; then
+  udevadm control --reload-rules
+  udevadm trigger
+fi
 
-/usr/bin/systemctl enable asus-bottom-screen-init.service
-/usr/bin/systemctl start asus-bottom-screen-init.service
+if [ "$(ps -p 1 -o comm=)" = "systemd" ]; then
+  /usr/bin/systemctl enable asus-bottom-screen-init.service
+  /usr/bin/systemctl start asus-bottom-screen-init.service
+else
+   echo "systemd not running, enable service later."
+fi
