@@ -12,12 +12,34 @@ attempt=0
         user=$(loginctl show-session "$sid" -p Name --value)
         type=$(loginctl show-session "$sid" -p Type --value)
         desktop=$(loginctl show-session "$sid" -p Desktop --value)
+        # Zjistíme stav sezení
+        state=$(loginctl show-session "$sid" -p State --value)
+
+        # Pokud sezení není aktivní (uživatel je na pozadí nebo je zamčeno), přeskočíme ho
+        if [[ "$state" != "active" ]]; then
+            echo "⚪ Sezení $sid (uživatel $user) není aktivní (stav: $state). Přeskakuji."
+            continue
+        fi
 
         if [[ "$user" == "sddm" ]]; then
-            exit 0
+            continue
         fi
 
         if [[ "$type" == "x11" || "$type" == "wayland" ]]; then
+            # 1. Zkusíme najít běžícího agenta pro daného uživatele
+            # -u: hledá procesy konkrétního uživatele
+            # -f: hledá v celé příkazové řádce (protože skript je argument pro bash/interpretr)
+            AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.sh" | head -n 1)
+
+            if [[ -n "$AGENT_PID" ]]; then
+                echo "🟢 Nalezen běžící agent (PID $AGENT_PID). Posílám signál SIGUSR1."
+                kill -SIGUSR1 "$AGENT_PID"
+                exit 0
+            fi
+
+            # 2. Agent neběží -> Fallback na "Most" (Sudo injection)
+            echo "⚠️ Agent neběží. Používám přímé volání přes sudo."
+
             USER_UID=$(loginctl show-session "$sid" -p User --value)
             runtime_dir=$(loginctl show-session "$sid" -p RuntimePath --value)
             runtime_dir="/run/user/$USER_UID"
