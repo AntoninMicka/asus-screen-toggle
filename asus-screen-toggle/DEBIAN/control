@@ -6,5 +6,5 @@ Architecture: all
 Maintainer: Antonin Micka <antonin.micka@email.cz>
 Description: Auto toggle spodního displeje ASUS Zenbook Duo podle připojení klávesnice
 Pre-Depends: bash, debconf, usbutils, udev, systemd, grep, sed, awk, console-setup
-Depends: kscreen, yad, iio-sensor-proxy inotify-tools
+Depends: kscreen, yad, iio-sensor-proxy, inotify-tools
 Recommends: x11-xserver-utils, wlr-randr, libkscreen-bin
