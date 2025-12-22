@@ -12,24 +12,60 @@ attempt=0
         user=$(loginctl show-session "$sid" -p Name --value)
         type=$(loginctl show-session "$sid" -p Type --value)
         desktop=$(loginctl show-session "$sid" -p Desktop --value)
-        # Zjistíme stav sezení
         state=$(loginctl show-session "$sid" -p State --value)
 
-        # Pokud sezení není aktivní (uživatel je na pozadí nebo je zamčeno), přeskočíme ho
+        # Pokud sezení není aktivní, přeskočíme ho
         if [[ "$state" != "active" ]]; then
             echo "⚪ Sezení $sid (uživatel $user) není aktivní (stav: $state). Přeskakuji."
             continue
         fi
 
-        if [[ "$user" == "sddm" ]]; then
+        if [[ "$user" == "sddm" || "$user" == "gdm" || "$user" == "lightdm" ]]; then
             continue
         fi
 
         if [[ "$type" == "x11" || "$type" == "wayland" ]]; then
-            # 1. Zkusíme najít běžícího agenta pro daného uživatele
-            # -u: hledá procesy konkrétního uživatele
-            # -f: hledá v celé příkazové řádce (protože skript je argument pro bash/interpretr)
+
+            # --- PŘÍPRAVA PROMĚNNÝCH PRO KOMUNIKACI ---
+            USER_UID=$(loginctl show-session "$sid" -p User --value)
+
+            # Zkusíme získat runtime cestu dynamicky, fallback na standardní cestu
+            runtime_path=$(loginctl show-session "$sid" -p RuntimePath --value)
+            if [[ -z "$runtime_path" ]]; then
+                runtime_path="/run/user/$USER_UID"
+            fi
+
+            # Adresa sběrnice je klíčová pro D-Bus volání
+            dbus_address="unix:path=$runtime_path/bus"
+
+            echo "🔎 Kontrola uživatele $user (UID: $USER_UID, SID: $sid, Type: $type)"
+
+
+            # --- 1. MOŽNOST: D-BUS VOLÁNÍ (Python Agent) ---
+            # Pokusíme se zavolat metodu Trigger na novém Python agentovi.
+            # Timeout nastavíme krátký (1s), aby to nezdržovalo, pokud agent neběží.
+            # Přesměrujeme stderr, abychom nešpinili logy, pokud služba neexistuje.
+
+            if sudo -u "$user" DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
+               dbus-send --session --print-reply --reply-timeout=1000 --dest=org.asus.ScreenToggle \
+               /org/asus/ScreenToggle org.asus.ScreenToggle.Trigger > /dev/null 2>&1; then
+
+                echo "✅ D-Bus: Zpráva úspěšně odeslána agentovi."
+                exit 0
+            fi
+
+
+            # --- 2. MOŽNOST: SIGNÁL (Legacy Shell Agent) ---
+            # Pokud D-Bus selhal (agent neběží nebo je to stará verze), zkusíme najít PID.
+            # Hledáme primárně starý shell skript. Nový python skript už by měl zareagovat na D-Bus výše,
+            # ale pro jistotu můžeme signál poslat i jemu, pokud by visel na D-Busu.
+
             AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.sh" | head -n 1)
+
+            # Pokud nenajdeme shell skript, zkusíme najít python proces (fallback pro signál)
+            if [[ -z "$AGENT_PID" ]]; then
+                 AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.py" | head -n 1)
+            fi
 
             if [[ -n "$AGENT_PID" ]]; then
                 echo "🟢 Nalezen běžící agent (PID $AGENT_PID). Posílám signál SIGUSR1."
@@ -37,14 +73,11 @@ attempt=0
                 exit 0
             fi
 
-            # 2. Agent neběží -> Fallback na "Most" (Sudo injection)
-            echo "⚠️ Agent neběží. Používám přímé volání přes sudo."
 
-            USER_UID=$(loginctl show-session "$sid" -p User --value)
-            runtime_dir=$(loginctl show-session "$sid" -p RuntimePath --value)
-            runtime_dir="/run/user/$USER_UID"
-            dbus_address="unix:path=$runtime_dir/bus"
+            # --- 3. MOŽNOST: PŘÍMÉ VOLÁNÍ (Fallback bez agenta) ---
+            echo "⚠️ Žádný agent neodpověděl. Používám přímé volání přes sudo."
 
+            # Pro X11 potřebujeme DISPLAY a Xauthority
             if [[ "$type" == "x11" ]]; then
                 display=$(loginctl show-session "$sid" -p Display --value)
                 xauth_file="/home/$user/.Xauthority"
@@ -54,52 +87,42 @@ attempt=0
                     continue
                 fi
 
-                echo "🟢 Nalezen X11 uživatel: $user"
-                echo "sid=$sid"
-                echo "DISPLAY=$display"
-                echo "XDG_RUNTIME_DIR=$runtime_dir"
-
-                # 💡 Tady můžeš dát X11-specifický příkaz
                 sudo -u "$user" \
                     env DISPLAY="$display" \
                         XDG_SESSION_ID="$sid" \
                         XDG_SESSION_TYPE="$type" \
                         XDG_CURRENT_DESKTOP="$desktop" \
-                        XDG_RUNTIME_DIR="$runtime_dir" \
+                        XDG_RUNTIME_DIR="$runtime_path" \
                         DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
                         DIR="$DIR" \
                     /usr/bin/asus-check-keyboard-user.sh
             fi
 
+            # Pro Wayland potřebujeme WAYLAND_DISPLAY
             if [[ "$type" == "wayland" ]]; then
-                wayland=$(loginctl show-session "$sid" -p WaylandDisplay --value)
-                wayland=wayland-0
-                echo "🟢 Nalezen Wayland uživatel: $user"
-                echo "sid=$sid"
-                echo "WAYLAND_DISPLAY=$wayland"
-                echo "XDG_RUNTIME_DIR=$runtime_dir"
-                echo "DBUS_SESSION_BUS_ADDRESS=$dbus_address"
+                # Někdy loginctl nevrátí WaylandDisplay, zkusíme default
+                wayland_disp=$(loginctl show-session "$sid" -p WaylandDisplay --value)
+                if [[ -z "$wayland_disp" ]]; then
+                    wayland_disp="wayland-0"
+                fi
 
-                # 💡 Tady můžeš dát Wayland-specifický příkaz
                 sudo -u "$user" \
-                    env WAYLAND_DISPLAY="$wayland" \
+                    env WAYLAND_DISPLAY="$wayland_disp" \
                         XDG_SESSION_ID="$sid" \
                         XDG_SESSION_TYPE="$type" \
                         XDG_CURRENT_DESKTOP="$desktop" \
-                        XDG_RUNTIME_DIR="$runtime_dir" \
+                        XDG_RUNTIME_DIR="$runtime_path" \
                         DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
                         DIR="$DIR" \
                     /usr/bin/asus-check-keyboard-user.sh
             fi
 
-            exit 0  # Ukončit skript po prvním nalezeném GUI uživateli
+            exit 0  # Ukončit skript po prvním nalezeném a obslouženém uživateli
         fi
     done
 
 #     if [[  (attempt  + 1) < max_tries ]]; then
-#         echo "❌ Žádný aktivní X11/Wayland uživatel. Čekám $delay s..."
-#         (( attempt++ ))
-#         sleep "$delay"
+#         ...
 #     fi
 # done
 

@@ -1,1 +1,8 @@
 *.deb
+/asus-screen-toggle.cflags
+/asus-screen-toggle.config
+/asus-screen-toggle.creator
+/asus-screen-toggle.creator.user
+/asus-screen-toggle.cxxflags
+/asus-screen-toggle.files
+/asus-screen-toggle.includes

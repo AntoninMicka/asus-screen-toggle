@@ -1,5 +1,5 @@
 [Desktop Entry]
 Type=Application
 Name=asus-screen-toggle
-Exec=/usr/bin/asus-user-agent.sh
+Exec=/usr/bin/asus-user-agent.py
 X-GNOME-Autostart-enabled=true

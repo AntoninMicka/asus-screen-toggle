@@ -43,3 +43,10 @@ asus-screen-toggle (0.0.6) unstable; urgency=low
     * add dependencies
 
     -- Antonin <antonin.micka@debian.org>  Sun, 1 Jun 2025 10:15:00 +0200
+
+asus-screen-toggle (0.1.0) unstable; urgency=low
+
+    [ Antonin ]
+    * add user agent
+
+    -- Antonin <antonin.micka@debian.org>  Sun, 1 Jun 2025 10:15:00 +0200
