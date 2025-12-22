@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Asus Screen Toggle Agent
+Comment=Control screen modes on Asus Zenbook Duo
+Exec=/usr/bin/asus-screen-toggle-launcher.sh
+Icon=/usr/share/asus-screen-toggle/icon-green.svg
+Terminal=false
+Categories=Settings;Hardware;
+StartupNotify=false
