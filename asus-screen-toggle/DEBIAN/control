@@ -1,10 +1,10 @@
 Package: asus-screen-toggle
-Version: 0.1.0
+Version: 1.0.0
 Section: misc
 Priority: optional
 Architecture: all
 Maintainer: Antonin Micka <antonin.micka@email.cz>
 Description: Auto toggle spodního displeje ASUS Zenbook Duo podle připojení klávesnice
 Pre-Depends: bash, debconf, usbutils, udev, systemd, grep, sed, awk, console-setup
-Depends: kscreen, yad, iio-sensor-proxy, inotify-tools, python3-gi, python3-pydbus, gir1.2-gtk-3.0, gir1.2-ayatanaappindicator3-0.1
+Depends: kscreen, yad, iio-sensor-proxy, inotify-tools, python3, python3-gi, python3-pydbus, gir1.2-gtk-3.0, gir1.2-ayatanaappindicator3-0.1 | gir1.2-appindicator3-0.1, dbus
 Recommends: x11-xserver-utils, wlr-randr, libkscreen-bin, gnome-shell-extension-appindicator
