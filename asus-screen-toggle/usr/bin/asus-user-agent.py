@@ -49,7 +49,15 @@ STATE_FILE = os.path.join(STATE_DIR, "state")
 
 class AsusAgent:
     """
-    D-Bus Agent s perzistencí do souboru.
+    <node>
+      <interface name="org.asus.ScreenToggle">
+        <method name="Trigger"/>
+        <method name="SetMode">
+          <arg type="s" name="mode" direction="in"/>
+        </method>
+        <method name="Quit"/>
+      </interface>
+    </node>
     """
 
     def __init__(self, quit_callback):
@@ -233,6 +241,7 @@ def quit_app(*args):
     if publication:
         try:
             publication.unpublish()
+            publication = None
             print("   ✅ D-Bus jméno uvolněno.")
         except Exception as e:
             print(f"   ⚠️ Chyba při uvolňování D-Bus: {e}")
@@ -240,6 +249,8 @@ def quit_app(*args):
     # 2. Ukončení GTK smyčky
     if loop:
         Gtk.main_quit()
+        
+    sys.exit(0)
 
 # --- Globální handler pro signály ---
 def signal_handler():
@@ -253,6 +264,11 @@ def signal_handler():
 if __name__ == "__main__":
     # Singleton logika a start
     bus = SessionBus()
+    dbus = bus.get("org.freedesktop.DBus")
+
+    if dbus.NameHasOwner(BUS_NAME):
+        print(f"⚠️ Agent už běží ({BUS_NAME})")
+        sys.exit(0)
 
     # Předáme funkci quit_app do agenta, aby ji mohl volat z menu
     # OPRAVA: Třída AsusAgent nyní tento argument přijímá
@@ -261,9 +277,13 @@ if __name__ == "__main__":
     try:
         # Uložíme si objekt publikace pro pozdější úklid
         publication = bus.publish(BUS_NAME, agent)
-    except RuntimeError:
-        print(f"⚠️ Agent už běží (Jméno {BUS_NAME} je obsazené).")
-        sys.exit(0)
+    except Exception as e:
+        print("❌ publish selhal:")
+        print(f"   typ: {type(e)}")
+        print(f"   repr: {repr(e)}")
+        print(f"   str : {e}")
+        #traceback.print_exc()
+        sys.exit(1)
 
     # Registrace signálů
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGUSR1, signal_handler)
