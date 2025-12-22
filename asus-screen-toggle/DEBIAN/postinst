@@ -4,7 +4,6 @@ set -e
 . /usr/share/debconf/confmodule
 
 CONFIG_FILE="/etc/asus-check-keyboard.cfg"
-AUTOSTART_FILE="/usr/share/asus-screen-toggle/autostart/asus-screen-toggle.desktop"
 
 # helper: pokud prázdné tak fallback
 fallback_if_empty() {
@@ -56,33 +55,6 @@ EOF
     else
         # soubor již existuje – zachováme ho, pokud uživatel upravoval
         echo "Konfig $CONFIG_FILE již existuje, nebude přepsán."
-    fi
-
-    # --- autostart / etc ---
-    db_get asus-screen-toggle/autostart_system
-    if [ "$RET" = "true" ]; then
-      mkdir -p /etc/xdg/autostart/
-      cp -f "$AUTOSTART_FILE" /etc/xdg/autostart/
-    else
-      db_get asus-screen-toggle/autostart_skel
-      if [ "$RET" = "true" ]; then
-          mkdir -p /etc/skel/.config/autostart
-          cp -f "$AUTOSTART_FILE" /etc/skel/.config/autostart/
-      fi
-
-      db_get asus-screen-toggle/autostart_existing
-      if [ "$RET" = "true" ]; then
-          for userdir in /home/*; do
-              [ -d "$userdir" ] || continue
-              user=$(basename "$userdir")
-              uid=$(id -u "$user" 2>/dev/null || echo 0)
-              [ "$uid" -ge 1000 ] || continue
-
-              su - "$user" -c "mkdir -p ~/.config/autostart"
-              cp -f "$AUTOSTART_FILE" "$userdir/.config/autostart/"
-              chown "$user:$user" "$userdir/.config/autostart/asus-screen-toggle.desktop"
-          done
-      fi
     fi
 
     /usr/bin/asus-check-keyboard-genrules.sh

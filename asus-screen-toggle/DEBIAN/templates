@@ -40,27 +40,3 @@ Description: Select the external keyboard for display switching
  Choose the external USB keyboard that will be used to trigger display switching.
 Description-cs.UTF-8: Vyberte externí klávesnici, která bude sloužit pro přepínání displeje
  Zvolte externí USB klávesnici, která bude použita pro přepínání displeje.
-
-Template: asus-screen-toggle/autostart_system
-Type: boolean
-Default: true
-Description: Add to system-wide startup (/etc/xdg/autostart/)?
- This will add a shortcut to the autostart script in the system-wide path.
-Description-cs.UTF-8: Přidat autostart do systémového po spuštění (/etc/xdg/autostart/)?
- Přidá odkaz na spouštěcí skript do systémové umístění.
-
-Template: asus-screen-toggle/autostart_skel
-Type: boolean
-Default: true
-Description: Add autostart to /etc/skel?
- This will add a shortcut to the autostart script in the default skeleton profile.
-Description-cs.UTF-8: Přidat autostart do /etc/skel?
- Přidá odkaz na spouštěcí skript do výchozího skeletového profilu.
-
-Template: asus-screen-toggle/autostart_existing
-Type: boolean
-Default: true
-Description: Add autostart to existing user profiles?
- The script will be added to all currently detected user home directories.
-Description-cs.UTF-8: Přidat autostart do existujících profilů?
- Skript se přidá do všech aktuálně nalezených uživatelských domovských složek.
