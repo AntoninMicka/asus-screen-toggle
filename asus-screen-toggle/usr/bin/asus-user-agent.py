@@ -234,6 +234,9 @@ loop = None
 publication = None
 
 def quit_app(*args):
+    global publication
+    global loop
+
     """Hlavní funkce pro bezpečné ukončení."""
     print("\n🧹 Provádím úklid a ukončuji agenta...")
 
