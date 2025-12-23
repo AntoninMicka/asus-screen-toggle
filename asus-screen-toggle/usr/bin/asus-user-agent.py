@@ -114,7 +114,9 @@ class StatusNotifierItem:
         return (self.icon_name, [], "Asus Screen Toggle", f"Režim: {self.agent.mode}")
 
     def Activate(self, x, y):
-        GLib.idle_add(self.agent._show_gtk_menu, 1)
+        """Levý klik (SNI): Spustí přímo nastavení."""
+        # Voláme pomocnou metodu agenta
+        GLib.idle_add(self.agent._launch_settings)
 
     def ContextMenu(self, x, y):
         GLib.idle_add(self.agent._show_gtk_menu, 3)
@@ -171,21 +173,47 @@ class AsusAgent:
 
     # --- Konfigurace ---
     def _load_config(self):
-        """Načte konfiguraci ze souboru."""
+        """
+        Načte konfiguraci s prioritou:
+        1. Defaultní hodnoty (v kódu)
+        2. Systémová konfigurace (/etc/asus-screen-toggle.conf)
+        3. Uživatelská konfigurace (~/.config/asus-screen-toggle/config.conf)
+        """
+        # 1. Defaultní hodnoty
         cfg = {"enable_dbus": True, "enable_signal": True}
-        if os.path.exists(CONFIG_FILE):
-            try:
-                with open(CONFIG_FILE, 'r') as f:
-                    for line in f:
-                        if "=" in line and not line.strip().startswith("#"):
-                            key, val = line.strip().split("=", 1)
+
+        # Seznam souborů v pořadí, jak se mají aplikovat (poslední vyhrává)
+        config_paths = [
+            "/etc/asus-screen-toggle.conf",
+            os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
+        ]
+
+        for path in config_paths:
+            if os.path.exists(path):
+                try:
+                    print(f"⚙️ Načítám soubor: {path}")
+                    with open(path, 'r') as f:
+                        for line in f:
+                            # Očištění řádku
+                            line = line.strip()
+                            # Přeskočit komentáře a nevalidní řádky
+                            if not line or line.startswith("#") or "=" not in line:
+                                continue
+
+                            key, val = line.split("=", 1)
                             key = key.strip().upper()
-                            val = val.strip().lower() == "true"
-                            if key == "ENABLE_DBUS": cfg["enable_dbus"] = val
-                            if key == "ENABLE_SIGNAL": cfg["enable_signal"] = val
-                print(f"⚙️ Konfigurace načtena: {cfg}")
-            except Exception as e:
-                print(f"⚠️ Chyba configu: {e}")
+                            # Převedeme na bool (true/True/TRUE -> True, cokoliv jiného -> False)
+                            val_bool = val.strip().lower() == "true"
+
+                            if key == "ENABLE_DBUS":
+                                cfg["enable_dbus"] = val_bool
+                            elif key == "ENABLE_SIGNAL":
+                                cfg["enable_signal"] = val_bool
+
+                except Exception as e:
+                    print(f"⚠️ Chyba při čtení configu {path}: {e}")
+
+        print(f"🏁 Finální aktivní konfigurace: {cfg}")
         return cfg
 
     def ReloadConfig(self):
@@ -276,6 +304,17 @@ class AsusAgent:
             self._set_icon_by_mode()
             self._run_check("MenuChange")
 
+    def _launch_settings(self):
+        """Spustí grafický konfigurační nástroj (asus-screen-settings.py)."""
+        print("🛠️ Spouštím nastavení...")
+        try:
+            subprocess.Popen(["/usr/bin/asus-screen-settings.py"])
+        except FileNotFoundError:
+             print("❌ Chyba: /usr/bin/asus-screen-settings.py nenalezen.")
+        except Exception as e:
+            print(f"❌ Chyba při spouštění nastavení: {e}")
+        return False # Pro případ volání z GLib.idle_add
+
     def _build_menu(self):
         menu = Gtk.Menu()
 
@@ -302,6 +341,10 @@ class AsusAgent:
         elif self.mode == "enforce-desktop": r_both.set_active(True)
 
         menu.append(Gtk.SeparatorMenuItem())
+
+        item_settings = Gtk.MenuItem(label="⚙️ Nastavení")
+        item_settings.connect("activate", lambda _: self._launch_settings())
+        menu.append(item_settings)
 
         item_check = Gtk.MenuItem(label="Zkontrolovat")
         item_check.connect("activate", lambda _: self._run_check())
@@ -385,6 +428,13 @@ def signal_handler():
         print(f"📩 Signál SIGUSR1 ignorován (Režim ze souboru: {agent.mode}).")
     return True
 
+def sighup_handler():
+    """Obsluha signálu SIGHUP - Reload konfigurace."""
+    print("🔄 Signál SIGHUP přijat: Znovunačítám konfiguraci...")
+    # Zavoláme metodu agenta, která načte soubory znovu
+    agent.config = agent._load_config()
+    return True # Musí vracet True, aby naslouchání pokračovalo
+
 if __name__ == "__main__":
     bus = SessionBus()
 
@@ -404,6 +454,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGUSR1, signal_handler)
+    GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGHUP, sighup_handler)
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, quit_app)
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, quit_app)
 

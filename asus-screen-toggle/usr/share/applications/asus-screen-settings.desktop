@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Asus Screen Settings
+Comment=Nastavení pro Asus Zenbook Duo Screen Toggle
+Exec=/usr/bin/asus-screen-settings.py
+Icon=/usr/share/asus-screen-toggle/icon-blue.svg
+Terminal=false
+Type=Application
+Categories=Settings;HardwareSettings;
