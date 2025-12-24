@@ -4,12 +4,32 @@ import os
 import signal
 import subprocess
 import warnings
+import time # Nový import pro čas
+import gettext
+import locale
 
-# Potlačení warningů
+# Nastavení lokalizace
+APP_NAME = "asus-screen-toggle"
+LOCALE_DIR = "/usr/share/locale"
+
+try:
+    # Pokusíme se nastavit systémovou locale
+    locale.setlocale(locale.LC_ALL, '')
+
+    # Inicializace gettext
+    gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
+    gettext.textdomain(APP_NAME)
+    _ = gettext.gettext
+except Exception as e:
+    # Fallback, pokud gettext selže (např. při vývoji mimo instalaci)
+    print(f"Warning: Localization not loaded: {e}")
+    _ = lambda s: s
+
 warnings.filterwarnings("ignore")
+from pydbus.generic import signal as Signal
 
 # --- Importy knihoven ---
-print("DEBUG: Načítám knihovny...")
+print(_("DEBUG: Načítám knihovny..."))
 try:
     import gi
     try:
@@ -20,32 +40,117 @@ try:
             gi.require_version('AppIndicator3', '0.1')
             from gi.repository import AppIndicator3 as AppIndicator
         except (ValueError, ImportError):
-            print("CHYBA: Nenalezena knihovna AppIndicator.")
+            print(_("CHYBA: Nenalezena knihovna AppIndicator."))
             sys.exit(1)
 
     gi.require_version('Gtk', '3.0')
     from gi.repository import GLib, Gtk
     from pydbus import SessionBus
 except Exception as e:
-    print(f"CHYBA při importu knihoven: {e}")
+    print(f_("CHYBA při importu knihoven: {e}"))
     sys.exit(1)
 
 # --- Konfigurace ---
 BUS_NAME = "org.asus.ScreenToggle"
 SCRIPT_PATH = "/usr/bin/asus-check-keyboard-user.sh"
 APP_ID = "asus-screen-toggler"
-ICON_NAME = "input-tablet" # Výchozí systémová ikona (backup)
+ICON_NAME = "input-tablet"
 ICON_PATH = "/usr/share/asus-screen-toggle"
 
-# Ikony (ujistěte se, že existují, jinak yad nezobrazí nic)
-# Pokud používáte absolutní cesty, AppIndicator je obvykle zvládne
-ICON_AUTO = os.path.join(ICON_PATH, "icon-green.svg")
-ICON_PRIMARY = os.path.join(ICON_PATH, "icon-red.svg")
-ICON_DESKTOP = os.path.join(ICON_PATH, "icon-blue.svg")
+ICON_AUTO_NAME = "icon-green.svg"
+ICON_PRIMARY_NAME = "icon-red.svg"
+ICON_DESKTOP_NAME = "icon-blue.svg"
+ICON_AUTO = os.path.join(ICON_PATH, ICON_AUTO_NAME)
+ICON_PRIMARY = os.path.join(ICON_PATH, ICON_PRIMARY_NAME)
+ICON_DESKTOP = os.path.join(ICON_PATH, ICON_DESKTOP_NAME)
 
-# Cesta k souboru s nastavením
 STATE_DIR = os.path.expanduser("~/.local/state/asus-check-keyboard")
 STATE_FILE = os.path.join(STATE_DIR, "state")
+CONFIG_FILE = os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
+
+class StatusNotifierItem:
+    """
+    <node>
+      <interface name="org.kde.StatusNotifierItem">
+        <property name="Category" type="s" access="read"/>
+        <property name="Id" type="s" access="read"/>
+        <property name="Title" type="s" access="read"/>
+        <property name="Status" type="s" access="read"/>
+        <property name="IconName" type="s" access="read"/>
+        <property name="IconThemePath" type="s" access="read"/>
+        <property name="ItemIsMenu" type="b" access="read"/>
+        <property name="ToolTip" type="(sa(iiay)ss)" access="read"/>
+
+        <method name="Activate">
+          <arg type="i" direction="in"/>
+          <arg type="i" direction="in"/>
+        </method>
+
+        <method name="ContextMenu">
+          <arg type="i" direction="in"/>
+          <arg type="i" direction="in"/>
+        </method>
+
+        <method name="SecondaryActivate">
+          <arg type="i" direction="in"/>
+          <arg type="i" direction="in"/>
+        </method>
+
+        <signal name="NewIcon"/>
+        <signal name="NewStatus"/>
+        <signal name="NewToolTip"/>
+      </interface>
+    </node>
+    """
+    NewIcon = Signal()
+    NewStatus = Signal()
+    NewToolTip = Signal()
+
+    def __init__(self, agent):
+        self.agent = agent
+        self.icon_name = ICON_AUTO_NAME
+        self.status = "Active"
+
+    @property
+    def Category(self): return "Hardware"
+    @property
+    def Id(self): return "asus-screen-toggle"
+    @property
+    def Title(self): return _("Asus Screen Toggle")
+    @property
+    def Status(self): return self.status
+    @property
+    def IconName(self): return self.icon_name
+    @property
+    def IconThemePath(self): return ICON_PATH
+    @property
+    def ItemIsMenu(self): return False
+    @property
+    def Menu(self): return "/StatusNotifierItem"
+    @property
+    def ToolTip(self): return (self.icon_name, [], _("Asus Screen Toggle"), _(f"Režim: {self.agent.mode}"))
+
+    def Activate(self, x, y):
+        """Levý klik (SNI): Spustí přímo nastavení."""
+        # Voláme pomocnou metodu agenta
+        GLib.idle_add(self.agent._launch_settings)
+
+    def ContextMenu(self, x, y):
+        GLib.idle_add(self.agent._show_gtk_menu, 3)
+
+    def SecondaryActivate(self, x, y):
+        self.agent._run_check("SNI_MiddleClick")
+
+    def set_icon(self, name):
+        base_name = os.path.splitext(os.path.basename(name))[0]
+        if self.icon_name != base_name:
+            self.icon_name = base_name
+            self.NewIcon()
+            self.NewToolTip()
+
+    def set_status(self, status):
+        self.status = status
+        self.NewStatus()
 
 class AsusAgent:
     """
@@ -55,249 +160,310 @@ class AsusAgent:
         <method name="SetMode">
           <arg type="s" name="mode" direction="in"/>
         </method>
+        <method name="ReloadConfig"/>
         <method name="Quit"/>
       </interface>
     </node>
     """
 
-    def __init__(self, quit_callback):
-        # OPRAVA: Přidán argument quit_callback
+    def __init__(self, quit_callback, bus):
         self.quit_callback = quit_callback
-        self.mode = self._load_mode() # Načtení při startu
+        self.mode = self._load_mode()
+        self.config = self._load_config()
+        self.bus = bus
         self.indicator = None
-        self._setup_systray()
+        self.tray_backend = None
+        self.menu = None
 
-    # --- Práce se souborem ---
-    def _load_mode(self):
-        """Načte režim ze souboru, default je 'automatic-enabled'."""
+        # Pro sledování změn souboru
+        self.last_file_mtime = 0
+        if os.path.exists(STATE_FILE):
+            self.last_file_mtime = os.stat(STATE_FILE).st_mtime
+
+        if is_kde():
+            try:
+                self._setup_sni()
+            except Exception as e:
+                print(f_("SNI failed, fallback na AppIndicator: {e}"))
+                self._setup_appindicator()
+                self.tray_backend = "appindicator"
+        else:
+            self._setup_appindicator()
+            self.tray_backend = "appindicator"
+
+        # Timer pro sledování externích změn souboru (každé 2s)
+        GLib.timeout_add_seconds(2, self._monitor_file_change)
+
+    # --- Konfigurace ---
+    def _load_config(self):
+        """
+        Načte konfiguraci s prioritou:
+        1. Defaultní hodnoty (v kódu)
+        2. Systémová konfigurace (/etc/asus-screen-toggle.conf)
+        3. Uživatelská konfigurace (~/.config/asus-screen-toggle/config.conf)
+        """
+        # 1. Defaultní hodnoty
+        cfg = {"enable_dbus": True, "enable_signal": True}
+
+        # Seznam souborů v pořadí, jak se mají aplikovat (poslední vyhrává)
+        config_paths = [
+            "/etc/asus-screen-toggle.conf",
+            os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
+        ]
+
+        for path in config_paths:
+            if os.path.exists(path):
+                try:
+                    print(_(f"⚙️ Načítám soubor: {path}"))
+                    with open(path, 'r') as f:
+                        for line in f:
+                            if "=" in line and not line.strip().startswith("#"):
+                                key, val = line.strip().split("=", 1)
+                                if key.strip().upper() == "ENABLE_DBUS": cfg["enable_dbus"] = (val.strip().lower() == "true")
+                                if key.strip().upper() == "ENABLE_SIGNAL": cfg["enable_signal"] = (val.strip().lower() == "true")
+                except: pass
+        return cfg
+
+    def _monitor_file_change(self):
+        """Kontroluje, zda se soubor nezměnil externě (např. přes GUI Settings)."""
+        if os.path.exists(STATE_FILE):
+            try:
+                mtime = os.stat(STATE_FILE).st_mtime
+                if mtime != self.last_file_mtime:
+                    # Soubor se změnil!
+                    self.last_file_mtime = mtime
+                    new_mode = self._load_mode(silent=True)
+                    if new_mode != self.mode:
+                        print(_(f"🔄 Detekována externí změna stavu -> {new_mode}"))
+                        self.mode = new_mode
+                        self._set_icon_by_mode()
+                        # Zde nespouštíme _run_check, protože předpokládáme,
+                        # že ten kdo soubor změnil (Settings App), už skript spustil nebo spustí.
+                        # Jen aktualizujeme ikonu.
+            except: pass
+        return True # Pokračovat v timeru
+
+    def _load_mode(self, silent=False):
         if os.path.exists(STATE_FILE):
             try:
                 with open(STATE_FILE, 'r') as f:
                     mode = f.read().strip()
                     if mode in ["automatic-enabled", "enforce-primary-only", "enforce-desktop"]:
-                        print(f"📂 Načten režim ze souboru: {mode}")
+                        print(_(f"📂 Načten režim ze souboru: {mode}"))
                         return mode
-            except Exception as e:
-                print(f"⚠️ Chyba při čtení configu: {e}")
+            except: pass
         return "automatic-enabled"
 
     def _save_mode(self, mode):
-        """Uloží režim do souboru."""
         try:
             os.makedirs(STATE_DIR, exist_ok=True)
             with open(STATE_FILE, 'w') as f:
                 f.write(mode)
-            print(f"💾 Režim '{mode}' uložen do {STATE_FILE}")
+            print(_(f"💾 Režim '{mode}' uložen do {STATE_FILE}"))
         except Exception as e:
-            print(f"❌ Chyba při ukládání configu: {e}")
+            print(_(f"❌ Chyba configu: {e}"))
 
     # --- D-Bus Metody ---
     def Trigger(self):
-        # I při triggeru přes D-Bus se podíváme, co máme nastaveno
-        if self.mode != "automatic-enabled":
-            print(f"📨 D-Bus: Ignorováno (Vynucen režim: {self.mode})")
-            return f"IGNORED: Mode is {self.mode}"
-
-        print("📨 D-Bus: Požadavek přijat (Auto).")
+        if not self.config["enable_dbus"]: return "DISABLED_BY_CONFIG"
+        if self.mode != "automatic-enabled": return f"IGNORED: Mode is {self.mode}"
         self._run_check("D-Bus")
         return "OK"
 
     def SetMode(self, mode_str):
-        if mode_str not in ["automatic-enabled", "enforce-primary-only", "enforce-desktop"]:
-            return "ERROR: Invalid mode"
-
-        # Aktualizace GUI (to vyvolá callback _on_mode_change a uloží soubor)
-        if mode_str == "automatic-enabled":
-            self.radio_auto.set_active(True)
-        elif mode_str == "enforce-primary-only":
-            self.radio_primary.set_active(True)
-        elif mode_str == "enforce-desktop":
-            self.radio_both.set_active(True)
-
-        return f"OK: Switched to {mode_str}"
+        if mode_str not in ["automatic-enabled", "enforce-primary-only", "enforce-desktop"]: return "ERROR"
+        print(_(f"📨 D-Bus SetMode: {mode_str}"))
+        self.mode = mode_str
+        self._save_mode(mode_str)
+        self._set_icon_by_mode()
+        self._run_check("D-Bus_SetMode")
+        return _(f"OK: Switched to {mode_str}")
 
     def Quit(self):
         print("🛑 Požadavek na ukončení...")
-        # OPRAVA: Voláme callback pro čistý úklid (D-Bus unpublish)
         self.quit_callback()
 
-    # --- Interní logika ---
+    def _launch_settings(self):
+        try: subprocess.Popen(["/usr/bin/asus-screen-settings.py"])
+        except: pass
+        return False
+
     def _run_check(self, source="Internal"):
-        """Spustí kontrolní skript."""
-        print(f"🚀 Spouštím logiku (Režim: {self.mode}, Zdroj: {source})...")
-        try:
-            # Už nepředáváme ENV proměnnou, skript si přečte soubor sám!
-            subprocess.Popen([SCRIPT_PATH])
-        except FileNotFoundError:
-            print(f"❌ Chyba: Skript {SCRIPT_PATH} nebyl nalezen.")
+        print(_(f"🚀 Spouštím logiku ({source})..."))
+        try: subprocess.Popen([SCRIPT_PATH])
+        except: pass
 
     def _set_icon_by_mode(self):
-        """Pomocná metoda pro nastavení ikony (pro AppIndicator)."""
-        # Poznámka: set_icon obvykle bere název ze systémového tématu.
-        # Pokud chceme cestu k souboru, některé verze to umí přímo,
-        # jiné vyžadují set_icon_full nebo set_icon_theme_path.
-        # Zkusíme předat cestu, pokud existuje.
-
-        icon_to_set = ICON_NAME # Fallback
-
-        if self.mode == "automatic-enabled":
-            if os.path.exists(ICON_AUTO): icon_to_set = ICON_AUTO
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-        elif self.mode == "enforce-primary-only":
-            if os.path.exists(ICON_PRIMARY): icon_to_set = ICON_PRIMARY
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
-        else: # enforce-desktop
-            if os.path.exists(ICON_DESKTOP): icon_to_set = ICON_DESKTOP
-            self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
-
-        # Nastavení ikony
-        try:
-            self.indicator.set_icon(icon_to_set)
-        except:
-            # Fallback pro starší verze nebo pokud cesta nefunguje
-            self.indicator.set_icon(ICON_NAME)
+        if self.tray_backend == "sni":
+            if self.mode == "automatic-enabled": self.sni.set_icon(ICON_AUTO_NAME)
+            elif self.mode == "enforce-primary-only": self.sni.set_icon(ICON_PRIMARY_NAME)
+            else: self.sni.set_icon(ICON_DESKTOP_NAME)
+        elif self.indicator:
+            icon_to_set = ICON_NAME
+            if self.mode == "automatic-enabled":
+                if os.path.exists(ICON_AUTO): icon_to_set = ICON_AUTO
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            elif self.mode == "enforce-primary-only":
+                if os.path.exists(ICON_PRIMARY): icon_to_set = ICON_PRIMARY
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
+            else:
+                if os.path.exists(ICON_DESKTOP): icon_to_set = ICON_DESKTOP
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
+            try: self.indicator.set_icon(icon_to_set)
+            except: self.indicator.set_icon(ICON_NAME)
 
     def _on_mode_change(self, widget, mode_name):
-        """Callback při změně přepínače v menu."""
         if widget.get_active():
-            # 1. Změna v paměti
             self.mode = mode_name
-            # 2. Uložení do souboru
             self._save_mode(mode_name)
-
-            # 3. GUI Feedback
             self._set_icon_by_mode()
-
-            # 4. Okamžité provedení akce
             self._run_check("MenuChange")
 
-    def _setup_systray(self):
-        self.indicator = AppIndicator.Indicator.new(
-            APP_ID, ICON_NAME, AppIndicator.IndicatorCategory.HARDWARE
-        )
-
-        # Nastavení ikony při startu
-        self._set_icon_by_mode()
-
+    def _build_menu(self):
         menu = Gtk.Menu()
 
-        item_title = Gtk.MenuItem(label="Asus Screen Control")
-        item_title.set_sensitive(False)
-        menu.append(item_title)
+        item = Gtk.MenuItem(label=_("Asus Screen Control"))
+        item.set_sensitive(False)
+        menu.append(item)
         menu.append(Gtk.SeparatorMenuItem())
 
-        # --- Přepínače ---
-        # Vytvoříme první
-        self.radio_auto = Gtk.RadioMenuItem(label="🤖 Automaticky (Senzory)")
-        self.radio_auto.connect("toggled", self._on_mode_change, "automatic-enabled")
-        menu.append(self.radio_auto)
+        r_auto = Gtk.RadioMenuItem(label=_("🤖 Automaticky"))
+        r_auto.connect("toggled", self._on_mode_change, "automatic-enabled")
+        menu.append(r_auto)
 
-        group = self.radio_auto.get_group()
+        group = r_auto.get_group()
+        r_prim = Gtk.RadioMenuItem(label=_("💻 Jen hlavní displej"), group=group[0])
+        r_prim.connect("toggled", self._on_mode_change, "enforce-primary-only")
+        menu.append(r_prim)
 
-        self.radio_primary = Gtk.RadioMenuItem(label="💻 Jen hlavní displej", group=group[0])
-        self.radio_primary.connect("toggled", self._on_mode_change, "enforce-primary-only")
-        menu.append(self.radio_primary)
+        r_both = Gtk.RadioMenuItem(label=_("🖥️🖥️ Oba displeje"), group=group[0])
+        r_both.connect("toggled", self._on_mode_change, "enforce-desktop")
+        menu.append(r_both)
 
-        # OPRAVA: Sjednocen název režimu na 'enforce-desktop' místo 'both'
-        self.radio_both = Gtk.RadioMenuItem(label="🖥️🖥️ Oba displeje", group=group[0])
-        self.radio_both.connect("toggled", self._on_mode_change, "enforce-desktop")
-        menu.append(self.radio_both)
-
-        # Nastavení aktivního prvku podle načteného stavu
-        if self.mode == "automatic-enabled":
-            self.radio_auto.set_active(True)
-        elif self.mode == "enforce-primary-only":
-            self.radio_primary.set_active(True)
-        elif self.mode == "enforce-desktop":
-            self.radio_both.set_active(True)
+        if self.mode == "automatic-enabled": r_auto.set_active(True)
+        elif self.mode == "enforce-primary-only": r_prim.set_active(True)
+        elif self.mode == "enforce-desktop": r_both.set_active(True)
 
         menu.append(Gtk.SeparatorMenuItem())
+        item_sets = Gtk.MenuItem(label=_("⚙️ Nastavení"))
+        item_sets.connect("activate", lambda _: self._launch_settings())
+        menu.append(item_sets)
 
-        # 4. Položka: Zkontrolovat
-        item_check = Gtk.MenuItem(label="Zkontrolovat")
+        item_check = Gtk.MenuItem(label=_("Zkontrolovat"))
         item_check.connect("activate", lambda _: self._run_check())
         menu.append(item_check)
 
         menu.append(Gtk.SeparatorMenuItem())
 
-        # 5. Položka: Konec
-        item_quit = Gtk.MenuItem(label="Ukončit")
+        item_quit = Gtk.MenuItem(label=_("Ukončit"))
         item_quit.connect("activate", lambda _: self.Quit())
         menu.append(item_quit)
 
         menu.show_all()
-        self.indicator.set_menu(menu)
+        return menu
+
+    def _setup_appindicator(self):
+        self.indicator = AppIndicator.Indicator.new(
+            APP_ID, ICON_NAME, AppIndicator.IndicatorCategory.HARDWARE
+        )
+        self._set_icon_by_mode()
+        self.indicator.set_menu(self._build_menu())
+
+    def _setup_sni(self):
+        print(_("🔵 Inicializuji KDE StatusNotifierItem (SNI)"))
+        self.sni = StatusNotifierItem(self)
+        try:
+            self.bus.register_object("/StatusNotifierItem", self.sni, None)
+            self.tray_backend = "sni"
+            self._set_icon_by_mode()
+            print(_("✅ SNI objekt vytvořen."))
+        except Exception as e:
+            print(_(f"❌ Chyba SNI: {e}"))
+            raise e
+
+    def register_sni_watcher(self):
+        if self.tray_backend == "sni":
+            try:
+                watcher = self.bus.get("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher")
+                watcher.RegisterStatusNotifierItem(BUS_NAME)
+                print(_("✅ SNI registrováno u KDE Watchera."))
+                self.sni.NewIcon()
+                self.sni.NewStatus()
+            except Exception as e:
+                print(_(f"⚠️ Watcher error: {e}"))
+
+    def _show_gtk_menu(self, button):
+        try:
+            self.menu = self._build_menu()
+            self.menu.show_all()
+            self.menu.popup(None, None, None, None, 0, 0)
+        except Exception as e:
+            print(_(f"❌ Chyba při zobrazování menu: {e}"))
+        return False
 
 
-# --- Globální proměnné pro čistý shutdown ---
+def is_kde():
+    return os.environ.get("XDG_CURRENT_DESKTOP", "").lower() == "kde"
+
+# --- Main Boilerplate ---
 loop = None
 publication = None
 
 def quit_app(*args):
-    global publication
-    global loop
-
-    """Hlavní funkce pro bezpečné ukončení."""
-    print("\n🧹 Provádím úklid a ukončuji agenta...")
-
-    # 1. Odhlášení z D-Bus
+    global publication, loop
+    print(_("\n🧹 Ukončuji..."))
     if publication:
-        try:
-            publication.unpublish()
-            publication = None
-            print("   ✅ D-Bus jméno uvolněno.")
-        except Exception as e:
-            print(f"   ⚠️ Chyba při uvolňování D-Bus: {e}")
-
-    # 2. Ukončení GTK smyčky
-    if loop:
-        Gtk.main_quit()
-        
+        try: publication.unpublish()
+        except: pass
+    if loop: Gtk.main_quit()
     sys.exit(0)
 
-# --- Globální handler pro signály ---
 def signal_handler():
+    # <--- NOVÉ: Kontrola konfigurace pro signály (včetně systémového skriptu)
+    if not agent.config["enable_signal"]:
+        print(_("📩 Signál SIGUSR1 ZAMÍTNUT (vypnuto v configu)."))
+        return True
+
     if agent.mode == "automatic-enabled":
-        print("📩 Signál SIGUSR1 přijat!")
+        print(_("📩 Signál SIGUSR1 přijat!"))
         agent._run_check("Signal")
     else:
-        print(f"📩 Signál ignorován (Režim ze souboru: {agent.mode}).")
+        print(_(f"📩 Signál SIGUSR1 ignorován (Režim ze souboru: {agent.mode})."))
     return True
 
-if __name__ == "__main__":
-    # Singleton logika a start
-    bus = SessionBus()
-    dbus = bus.get("org.freedesktop.DBus")
+def sighup_handler():
+    """Obsluha signálu SIGHUP - Reload konfigurace."""
+    print(_("🔄 Signál SIGHUP přijat: Znovunačítám konfiguraci..."))
+    # Zavoláme metodu agenta, která načte soubory znovu
+    agent.config = agent._load_config()
+    return True # Musí vracet True, aby naslouchání pokračovalo
 
-    if dbus.NameHasOwner(BUS_NAME):
-        print(f"⚠️ Agent už běží ({BUS_NAME})")
+if __name__ == "__main__":
+    bus = SessionBus()
+
+    dbus_sys = bus.get("org.freedesktop.DBus", "/org/freedesktop/DBus")
+    if dbus_sys.NameHasOwner(BUS_NAME):
+        print(_(f"⚠️ Agent už běží."))
         sys.exit(0)
 
-    # Předáme funkci quit_app do agenta, aby ji mohl volat z menu
-    # OPRAVA: Třída AsusAgent nyní tento argument přijímá
-    agent = AsusAgent(quit_callback=quit_app)
+    agent = AsusAgent(quit_callback=quit_app, bus=bus)
 
     try:
-        # Uložíme si objekt publikace pro pozdější úklid
         publication = bus.publish(BUS_NAME, agent)
+        print(_(f"✅ D-Bus jméno {BUS_NAME} získáno."))
+        agent.register_sni_watcher()
     except Exception as e:
-        print("❌ publish selhal:")
-        print(f"   typ: {type(e)}")
-        print(f"   repr: {repr(e)}")
-        print(f"   str : {e}")
-        #traceback.print_exc()
+        print(_(f"❌ Start selhal: {e}"))
         sys.exit(1)
 
-    # Registrace signálů
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGUSR1, signal_handler)
-
-    # ZDE JE ZMĚNA: SIGTERM a SIGINT (Ctrl+C) nyní volají naši čistící funkci
+    GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGHUP, sighup_handler)
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, quit_app)
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, quit_app)
 
-    print(f"✅ Asus Agent GUI spuštěn.")
-    print(f"   Režim: {agent.mode}")
-    print(f"   PID: {os.getpid()}")
+    print(_(f"✅ Asus Agent GUI spuštěn."))
+    print(_(f"   Režim: {agent.mode}"))
+    print(_(f"   PID: {os.getpid()}"))
 
     # Hlavní smyčka v bloku try/finally pro jistotu
     try:

@@ -4,6 +4,16 @@ max_tries=1
 delay=15
 attempt=0
 
+ENABLE_DIRECT_CALL="false"
+ENABLE_DBUS="true"
+ENABLE_SIGNAL="false"
+
+# --- 1. Načtení konfigurace ---
+if [[ -f /etc/asus-check-keyboard.cfg ]]; then
+    source /etc/asus-check-keyboard.cfg
+else
+    exit 0
+fi
 # while (( attempt < max_tries )); do
 #     echo "⏳ Pokus $((attempt+1)) / $max_tries"
 
@@ -46,12 +56,14 @@ attempt=0
             # Timeout nastavíme krátký (1s), aby to nezdržovalo, pokud agent neběží.
             # Přesměrujeme stderr, abychom nešpinili logy, pokud služba neexistuje.
 
-            if sudo -u "$user" DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
-               dbus-send --session --print-reply --reply-timeout=1000 --dest=org.asus.ScreenToggle \
-               /org/asus/ScreenToggle org.asus.ScreenToggle.Trigger > /dev/null 2>&1; then
+            if [[ "$ENABLE_DBUS" == "true" ]]; then
+                if sudo -u "$user" DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
+                dbus-send --session --print-reply --reply-timeout=1000 --dest=org.asus.ScreenToggle \
+                /org/asus/ScreenToggle org.asus.ScreenToggle.Trigger > /dev/null 2>&1; then
 
-                echo "✅ D-Bus: Zpráva úspěšně odeslána agentovi."
-                exit 0
+                    echo "✅ D-Bus: Zpráva úspěšně odeslána agentovi."
+                    exit 0
+                fi
             fi
 
 
@@ -60,61 +72,65 @@ attempt=0
             # Hledáme primárně starý shell skript. Nový python skript už by měl zareagovat na D-Bus výše,
             # ale pro jistotu můžeme signál poslat i jemu, pokud by visel na D-Busu.
 
-            AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.sh" | head -n 1)
+            if [[ "$ENABLE_SIGNAL" == "true" ]]; then
+                AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.sh" | head -n 1)
 
-            # Pokud nenajdeme shell skript, zkusíme najít python proces (fallback pro signál)
-            if [[ -z "$AGENT_PID" ]]; then
-                 AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.py" | head -n 1)
+                # Pokud nenajdeme shell skript, zkusíme najít python proces (fallback pro signál)
+                if [[ -z "$AGENT_PID" ]]; then
+                    AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.py" | head -n 1)
+                fi
+
+                if [[ -n "$AGENT_PID" ]]; then
+                    echo "🟢 Nalezen běžící agent (PID $AGENT_PID). Posílám signál SIGUSR1."
+                    kill -SIGUSR1 "$AGENT_PID"
+                    exit 0
+                fi
             fi
 
-            if [[ -n "$AGENT_PID" ]]; then
-                echo "🟢 Nalezen běžící agent (PID $AGENT_PID). Posílám signál SIGUSR1."
-                kill -SIGUSR1 "$AGENT_PID"
-                exit 0
-            fi
 
-
+            if [[ "$ENABLE_DIRECT_CALL" == "true" ]]; then
             # --- 3. MOŽNOST: PŘÍMÉ VOLÁNÍ (Fallback bez agenta) ---
-            echo "⚠️ Žádný agent neodpověděl. Používám přímé volání přes sudo."
+                echo "⚠️ Žádný agent neodpověděl. Používám přímé volání přes sudo."
 
-            # Pro X11 potřebujeme DISPLAY a Xauthority
-            if [[ "$type" == "x11" ]]; then
-                display=$(loginctl show-session "$sid" -p Display --value)
-                xauth_file="/home/$user/.Xauthority"
+                # Pro X11 potřebujeme DISPLAY a Xauthority
+                if [[ "$type" == "x11" ]]; then
+                    display=$(loginctl show-session "$sid" -p Display --value)
+                    xauth_file="/home/$user/.Xauthority"
 
-                if [[ ! -f "$xauth_file" ]]; then
-                    echo "⚠️  XAUTHORITY nenalezen pro uživatele $user. Přeskočeno."
-                    continue
+                    if [[ ! -f "$xauth_file" ]]; then
+                        echo "⚠️  XAUTHORITY nenalezen pro uživatele $user. Přeskočeno."
+                        continue
+                    fi
+
+                    sudo -u "$user" \
+                        env DISPLAY="$display" \
+                            XDG_SESSION_ID="$sid" \
+                            XDG_SESSION_TYPE="$type" \
+                            XDG_CURRENT_DESKTOP="$desktop" \
+                            XDG_RUNTIME_DIR="$runtime_path" \
+                            DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
+                            DIR="$DIR" \
+                        /usr/bin/asus-check-keyboard-user.sh
                 fi
 
-                sudo -u "$user" \
-                    env DISPLAY="$display" \
-                        XDG_SESSION_ID="$sid" \
-                        XDG_SESSION_TYPE="$type" \
-                        XDG_CURRENT_DESKTOP="$desktop" \
-                        XDG_RUNTIME_DIR="$runtime_path" \
-                        DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
-                        DIR="$DIR" \
-                    /usr/bin/asus-check-keyboard-user.sh
-            fi
+                # Pro Wayland potřebujeme WAYLAND_DISPLAY
+                if [[ "$type" == "wayland" ]]; then
+                    # Někdy loginctl nevrátí WaylandDisplay, zkusíme default
+                    wayland_disp=$(loginctl show-session "$sid" -p WaylandDisplay --value)
+                    if [[ -z "$wayland_disp" ]]; then
+                        wayland_disp="wayland-0"
+                    fi
 
-            # Pro Wayland potřebujeme WAYLAND_DISPLAY
-            if [[ "$type" == "wayland" ]]; then
-                # Někdy loginctl nevrátí WaylandDisplay, zkusíme default
-                wayland_disp=$(loginctl show-session "$sid" -p WaylandDisplay --value)
-                if [[ -z "$wayland_disp" ]]; then
-                    wayland_disp="wayland-0"
+                    sudo -u "$user" \
+                        env WAYLAND_DISPLAY="$wayland_disp" \
+                            XDG_SESSION_ID="$sid" \
+                            XDG_SESSION_TYPE="$type" \
+                            XDG_CURRENT_DESKTOP="$desktop" \
+                            XDG_RUNTIME_DIR="$runtime_path" \
+                            DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
+                            DIR="$DIR" \
+                        /usr/bin/asus-check-keyboard-user.sh
                 fi
-
-                sudo -u "$user" \
-                    env WAYLAND_DISPLAY="$wayland_disp" \
-                        XDG_SESSION_ID="$sid" \
-                        XDG_SESSION_TYPE="$type" \
-                        XDG_CURRENT_DESKTOP="$desktop" \
-                        XDG_RUNTIME_DIR="$runtime_path" \
-                        DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
-                        DIR="$DIR" \
-                    /usr/bin/asus-check-keyboard-user.sh
             fi
 
             exit 0  # Ukončit skript po prvním nalezeném a obslouženém uživateli
