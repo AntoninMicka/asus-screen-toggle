@@ -4,10 +4,9 @@ import os
 import signal
 import subprocess
 import warnings
+import time # Nový import pro čas
 
-# Potlačení warningů
 warnings.filterwarnings("ignore")
-
 from pydbus.generic import signal as Signal
 
 # --- Importy knihoven ---
@@ -48,7 +47,7 @@ ICON_DESKTOP = os.path.join(ICON_PATH, ICON_DESKTOP_NAME)
 
 STATE_DIR = os.path.expanduser("~/.local/state/asus-check-keyboard")
 STATE_FILE = os.path.join(STATE_DIR, "state")
-CONFIG_FILE = os.path.expanduser("~/.config/asus-screen-toggle/config.conf") # <--- NOVÉ
+CONFIG_FILE = os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
 
 class StatusNotifierItem:
     """
@@ -110,8 +109,7 @@ class StatusNotifierItem:
     @property
     def Menu(self): return "/StatusNotifierItem"
     @property
-    def ToolTip(self):
-        return (self.icon_name, [], "Asus Screen Toggle", f"Režim: {self.agent.mode}")
+    def ToolTip(self): return (self.icon_name, [], "Asus Screen Toggle", f"Režim: {self.agent.mode}")
 
     def Activate(self, x, y):
         """Levý klik (SNI): Spustí přímo nastavení."""
@@ -122,7 +120,6 @@ class StatusNotifierItem:
         GLib.idle_add(self.agent._show_gtk_menu, 3)
 
     def SecondaryActivate(self, x, y):
-        print("SNI: Middle Click -> Quick Check")
         self.agent._run_check("SNI_MiddleClick")
 
     def set_icon(self, name):
@@ -135,7 +132,6 @@ class StatusNotifierItem:
     def set_status(self, status):
         self.status = status
         self.NewStatus()
-
 
 class AsusAgent:
     """
@@ -154,11 +150,16 @@ class AsusAgent:
     def __init__(self, quit_callback, bus):
         self.quit_callback = quit_callback
         self.mode = self._load_mode()
-        self.config = self._load_config() # <--- NOVÉ: Načtení konfigurace
+        self.config = self._load_config()
         self.bus = bus
         self.indicator = None
         self.tray_backend = None
         self.menu = None
+
+        # Pro sledování změn souboru
+        self.last_file_mtime = 0
+        if os.path.exists(STATE_FILE):
+            self.last_file_mtime = os.stat(STATE_FILE).st_mtime
 
         if is_kde():
             try:
@@ -170,6 +171,9 @@ class AsusAgent:
         else:
             self._setup_appindicator()
             self.tray_backend = "appindicator"
+
+        # Timer pro sledování externích změn souboru (každé 2s)
+        GLib.timeout_add_seconds(2, self._monitor_file_change)
 
     # --- Konfigurace ---
     def _load_config(self):
@@ -194,35 +198,33 @@ class AsusAgent:
                     print(f"⚙️ Načítám soubor: {path}")
                     with open(path, 'r') as f:
                         for line in f:
-                            # Očištění řádku
-                            line = line.strip()
-                            # Přeskočit komentáře a nevalidní řádky
-                            if not line or line.startswith("#") or "=" not in line:
-                                continue
-
-                            key, val = line.split("=", 1)
-                            key = key.strip().upper()
-                            # Převedeme na bool (true/True/TRUE -> True, cokoliv jiného -> False)
-                            val_bool = val.strip().lower() == "true"
-
-                            if key == "ENABLE_DBUS":
-                                cfg["enable_dbus"] = val_bool
-                            elif key == "ENABLE_SIGNAL":
-                                cfg["enable_signal"] = val_bool
-
-                except Exception as e:
-                    print(f"⚠️ Chyba při čtení configu {path}: {e}")
-
-        print(f"🏁 Finální aktivní konfigurace: {cfg}")
+                            if "=" in line and not line.strip().startswith("#"):
+                                key, val = line.strip().split("=", 1)
+                                if key.strip().upper() == "ENABLE_DBUS": cfg["enable_dbus"] = (val.strip().lower() == "true")
+                                if key.strip().upper() == "ENABLE_SIGNAL": cfg["enable_signal"] = (val.strip().lower() == "true")
+                except: pass
         return cfg
 
-    def ReloadConfig(self):
-        """D-Bus metoda pro znovunačtení konfigurace bez restartu."""
-        self.config = self._load_config()
-        return "Config Reloaded"
+    def _monitor_file_change(self):
+        """Kontroluje, zda se soubor nezměnil externě (např. přes GUI Settings)."""
+        if os.path.exists(STATE_FILE):
+            try:
+                mtime = os.stat(STATE_FILE).st_mtime
+                if mtime != self.last_file_mtime:
+                    # Soubor se změnil!
+                    self.last_file_mtime = mtime
+                    new_mode = self._load_mode(silent=True)
+                    if new_mode != self.mode:
+                        print(f"🔄 Detekována externí změna stavu -> {new_mode}")
+                        self.mode = new_mode
+                        self._set_icon_by_mode()
+                        # Zde nespouštíme _run_check, protože předpokládáme,
+                        # že ten kdo soubor změnil (Settings App), už skript spustil nebo spustí.
+                        # Jen aktualizujeme ikonu.
+            except: pass
+        return True # Pokračovat v timeru
 
-    # --- Práce se souborem ---
-    def _load_mode(self):
+    def _load_mode(self, silent=False):
         if os.path.exists(STATE_FILE):
             try:
                 with open(STATE_FILE, 'r') as f:
@@ -244,22 +246,14 @@ class AsusAgent:
 
     # --- D-Bus Metody ---
     def Trigger(self):
-        # <--- NOVÉ: Kontrola konfigurace
-        if not self.config["enable_dbus"]:
-            print("📨 D-Bus: Požadavek ZAMÍTNUT (vypnuto v configu).")
-            return "DISABLED_BY_CONFIG"
-
-        if self.mode != "automatic-enabled":
-            print(f"📨 D-Bus: Ignorováno (Vynucen režim: {self.mode})")
-            return f"IGNORED: Mode is {self.mode}"
-
-        print("📨 D-Bus: Požadavek přijat (Auto).")
+        if not self.config["enable_dbus"]: return "DISABLED_BY_CONFIG"
+        if self.mode != "automatic-enabled": return f"IGNORED: Mode is {self.mode}"
         self._run_check("D-Bus")
         return "OK"
 
     def SetMode(self, mode_str):
-        if mode_str not in ["automatic-enabled", "enforce-primary-only", "enforce-desktop"]:
-            return "ERROR: Invalid mode"
+        if mode_str not in ["automatic-enabled", "enforce-primary-only", "enforce-desktop"]: return "ERROR"
+        print(f"📨 D-Bus SetMode: {mode_str}")
         self.mode = mode_str
         self._save_mode(mode_str)
         self._set_icon_by_mode()
@@ -270,13 +264,15 @@ class AsusAgent:
         print("🛑 Požadavek na ukončení...")
         self.quit_callback()
 
-    # --- Interní logika ---
+    def _launch_settings(self):
+        try: subprocess.Popen(["/usr/bin/asus-screen-settings.py"])
+        except: pass
+        return False
+
     def _run_check(self, source="Internal"):
-        print(f"🚀 Spouštím logiku (Režim: {self.mode}, Zdroj: {source})...")
-        try:
-            subprocess.Popen([SCRIPT_PATH])
-        except FileNotFoundError:
-            print(f"❌ Chyba: Skript {SCRIPT_PATH} nebyl nalezen.")
+        print(f"🚀 Spouštím logiku ({source})...")
+        try: subprocess.Popen([SCRIPT_PATH])
+        except: pass
 
     def _set_icon_by_mode(self):
         if self.tray_backend == "sni":
@@ -304,17 +300,6 @@ class AsusAgent:
             self._set_icon_by_mode()
             self._run_check("MenuChange")
 
-    def _launch_settings(self):
-        """Spustí grafický konfigurační nástroj (asus-screen-settings.py)."""
-        print("🛠️ Spouštím nastavení...")
-        try:
-            subprocess.Popen(["/usr/bin/asus-screen-settings.py"])
-        except FileNotFoundError:
-             print("❌ Chyba: /usr/bin/asus-screen-settings.py nenalezen.")
-        except Exception as e:
-            print(f"❌ Chyba při spouštění nastavení: {e}")
-        return False # Pro případ volání z GLib.idle_add
-
     def _build_menu(self):
         menu = Gtk.Menu()
 
@@ -323,7 +308,7 @@ class AsusAgent:
         menu.append(item)
         menu.append(Gtk.SeparatorMenuItem())
 
-        r_auto = Gtk.RadioMenuItem(label="🤖 Automaticky (Senzory)")
+        r_auto = Gtk.RadioMenuItem(label="🤖 Automaticky")
         r_auto.connect("toggled", self._on_mode_change, "automatic-enabled")
         menu.append(r_auto)
 
@@ -341,10 +326,9 @@ class AsusAgent:
         elif self.mode == "enforce-desktop": r_both.set_active(True)
 
         menu.append(Gtk.SeparatorMenuItem())
-
-        item_settings = Gtk.MenuItem(label="⚙️ Nastavení")
-        item_settings.connect("activate", lambda _: self._launch_settings())
-        menu.append(item_settings)
+        item_sets = Gtk.MenuItem(label="⚙️ Nastavení")
+        item_sets.connect("activate", lambda _: self._launch_settings())
+        menu.append(item_sets)
 
         item_check = Gtk.MenuItem(label="Zkontrolovat")
         item_check.connect("activate", lambda _: self._run_check())

@@ -6,24 +6,45 @@ import gi
 
 try:
     gi.require_version('Gtk', '3.0')
-    from gi.repository import Gtk, GLib
+    from gi.repository import Gtk, GLib, GdkPixbuf
 except ValueError:
     print("Error: Gtk 3.0 not found.")
     sys.exit(1)
 
+# Pokus o import pydbus pro komunikaci s Agentem
+try:
+    from pydbus import SessionBus
+    DBUS_AVAILABLE = True
+except ImportError:
+    DBUS_AVAILABLE = False
+    print("Warning: pydbus not found. Direct D-Bus communication disabled.")
+
 # --- Konstanty ---
 APP_TITLE = "Nastavení Asus Screen Toggle"
+BUS_NAME = "org.asus.ScreenToggle" # D-Bus jméno agenta
 USER_SERVICE = "asus-screen-toggle.service"
 SYSTEM_SERVICE = "asus-bottom-screen-init.service"
 
+# Cesty ke konfiguracím
 USER_CONFIG_FILE = os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
-SYSTEM_CONFIG_FILE = "/etc/asus-check-keyboard.cfg"
+SYSTEM_CONFIG_FILE = "/etc/asus-screen-toggle.conf"
+
+# Cesty pro logiku přepínání (stejné jako v User Agent)
+STATE_DIR = os.path.expanduser("~/.local/state/asus-check-keyboard")
+STATE_FILE = os.path.join(STATE_DIR, "state")
+SCRIPT_PATH = "/usr/bin/asus-check-keyboard-user.sh"
+
+# Cesty k ikonám
+ICON_PATH = "/usr/share/asus-screen-toggle"
+ICON_AUTO = os.path.join(ICON_PATH, "icon-green.svg")
+ICON_PRIMARY = os.path.join(ICON_PATH, "icon-red.svg")
+ICON_DESKTOP = os.path.join(ICON_PATH, "icon-blue.svg")
 
 class AsusSettingsApp(Gtk.Window):
     def __init__(self):
         super().__init__(title=APP_TITLE)
         self.set_border_width(10)
-        self.set_default_size(600, 550)
+        self.set_default_size(650, 600)
         self.set_position(Gtk.WindowPosition.CENTER)
 
         # Notebook s kartami
@@ -34,10 +55,47 @@ class AsusSettingsApp(Gtk.Window):
         self.add(main_layout)
         main_layout.pack_start(self.notebook, True, True, 0)
 
+        # --- KARTA 0: DOMŮ (Rychlé ovládání) ---
+        self.page_home = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
+        self.page_home.set_border_width(20)
+        self.notebook.append_page(self.page_home, Gtk.Label(label="Domů"))
+
+        # Nadpis
+        lbl_welcome = Gtk.Label(label="<span size='x-large' weight='bold'>Rychlé ovládání</span>")
+        lbl_welcome.set_use_markup(True)
+        self.page_home.pack_start(lbl_welcome, False, False, 10)
+
+        hbox_modes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        hbox_modes.set_halign(Gtk.Align.CENTER)
+        self.page_home.pack_start(hbox_modes, True, True, 0)
+
+        # 1. Tlačítko AUTO
+        self.btn_mode_auto = self.create_mode_button("Automaticky", ICON_AUTO, "Senzory", "automatic-enabled")
+        hbox_modes.pack_start(self.btn_mode_auto, True, True, 0)
+
+        # 2. Tlačítko PRIMARY
+        self.btn_mode_primary = self.create_mode_button("Jen Hlavní", ICON_PRIMARY, "Vypnout spodní", "enforce-primary-only")
+        hbox_modes.pack_start(self.btn_mode_primary, True, True, 0)
+
+        # 3. Tlačítko DESKTOP
+        self.btn_mode_desktop = self.create_mode_button("Oba Displeje", ICON_DESKTOP, "Vynutit zapnutí", "enforce-desktop")
+        hbox_modes.pack_start(self.btn_mode_desktop, True, True, 0)
+
+        # Oddělovač
+        self.page_home.pack_start(Gtk.Separator(), False, False, 10)
+
+        # Tlačítko Kontrola
+        btn_check = Gtk.Button(label="🔄 Spustit okamžitou kontrolu")
+        btn_check.set_property("width-request", 300)
+        btn_check.set_halign(Gtk.Align.CENTER)
+        btn_check.get_style_context().add_class("suggested-action") # Modré zvýraznění
+        btn_check.connect("clicked", lambda x: self.run_check())
+        self.page_home.pack_start(btn_check, False, False, 10)
+
         # --- KARTA 1: OBECNÉ (Služby a uživatelské chování) ---
         self.page_general = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.page_general.set_border_width(10)
-        self.notebook.append_page(self.page_general, Gtk.Label(label="Obecné & Služby"))
+        self.notebook.append_page(self.page_general, Gtk.Label(label="Služby & Config"))
 
         # 1. Sekce: Správa Služeb
         frame_services = Gtk.Frame(label="Stav Služeb")
@@ -134,8 +192,128 @@ class AsusSettingsApp(Gtk.Window):
         bbox.add(btn_save)
 
         # Start
+        self.current_mode_in_ui = None # Pro sledování stavu UI
         self.refresh_all()
         GLib.timeout_add_seconds(3, self.refresh_services_only)
+
+    # --- UI Helpers pro Domovskou stránku ---
+
+    def create_mode_button(self, title, icon_path, subtitle, mode_id):
+        """Vytvoří velké tlačítko s ikonou pro výběr režimu."""
+        btn = Gtk.Button()
+        btn.set_relief(Gtk.ReliefStyle.NORMAL)
+        btn.set_size_request(140, 160) # Pevná velikost
+
+        # Obsah tlačítka (Vertical Box)
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
+        vbox.set_valign(Gtk.Align.CENTER)
+
+        # Ikona
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(icon_path, 64, 64, True)
+            img = Gtk.Image.new_from_pixbuf(pixbuf)
+        except:
+            img = Gtk.Image.new_from_icon_name("image-missing", Gtk.IconSize.DIALOG)
+
+        vbox.pack_start(img, True, True, 5)
+
+        # Texty
+        lbl_title = Gtk.Label(label=f"<b>{title}</b>")
+        lbl_title.set_use_markup(True)
+        vbox.pack_start(lbl_title, False, False, 0)
+
+        lbl_sub = Gtk.Label(label=f"<small>{subtitle}</small>")
+        lbl_sub.set_use_markup(True)
+        lbl_sub.get_style_context().add_class("dim-label")
+        vbox.pack_start(lbl_sub, False, False, 0)
+
+        btn.add(vbox)
+
+        # Uložíme ID režimu do tlačítka pro callback
+        btn.mode_id = mode_id
+        btn.connect("clicked", self.on_mode_clicked)
+
+        return btn
+
+    def update_home_ui_state(self, current_mode):
+        """Zvýrazní aktivní tlačítko podle režimu."""
+        self.current_mode_in_ui = current_mode
+
+        # Reset stylů (pomocí citlivosti - aktivní režim bude 'insensitive', tedy zamáčknutý)
+        # Nebo lépe: Všechny sensitive, ale aktivnímu dáme jiný styl nebo relief.
+        # Zde použijeme logiku: Aktivní tlačítko je "deaktivované" (nejde na něj znovu kliknout) a vypadá zamáčkle.
+
+        for btn, mid in [(self.btn_mode_auto, "automatic-enabled"),
+                         (self.btn_mode_primary, "enforce-primary-only"),
+                         (self.btn_mode_desktop, "enforce-desktop")]:
+            if mid == current_mode:
+                btn.set_sensitive(False) # Vizuálně indikuje "vybráno"
+                # btn.get_style_context().add_class("suggested-action") # Alternativa pro GTK CSS
+            else:
+                btn.set_sensitive(True)
+
+    def on_mode_clicked(self, btn):
+        mode = btn.mode_id
+        print(f"UI: Požadavek na změnu režimu -> {mode}")
+
+        success = False
+
+        # 1. Zkusit D-Bus (synchronizace s Agentem)
+        if DBUS_AVAILABLE:
+            try:
+                bus = SessionBus()
+                # Získáme proxy objekt
+                agent_proxy = bus.get(BUS_NAME) # Získá hlavní object path
+                # Voláme metodu SetMode
+                resp = agent_proxy.SetMode(mode)
+                print(f"D-Bus odpověď: {resp}")
+                success = True
+            except Exception as e:
+                print(f"D-Bus chyba (Agent neběží?): {e}")
+
+        # 2. Fallback: Zápis do souboru (pokud D-Bus selhal)
+        if not success:
+            print("Fallback: Zapisuji přímo do souboru...")
+            try:
+                os.makedirs(STATE_DIR, exist_ok=True)
+                with open(STATE_FILE, 'w') as f:
+                    f.write(mode)
+                self.run_check() # Spustíme script manuálně
+            except Exception as e:
+                self.show_error(f"Nepodařilo se zapsat stav: {e}")
+                return
+
+        # UI aktualizujeme hned pro odezvu (timer to pak potvrdí)
+        self.update_home_ui_state(mode)
+
+    def run_check(self):
+        try:
+            subprocess.Popen([SCRIPT_PATH])
+        except Exception as e:
+            self.show_error(f"Chyba při spouštění skriptu: {e}")
+
+    def periodic_refresh(self):
+        self.refresh_all()
+        return True # Pokračovat v timeru
+
+    def refresh_all(self, widget=None):
+        # 1. Režim (čtení ze souboru - synchronizace od Agenta k Aplikaci)
+        if os.path.exists(STATE_FILE):
+            try:
+                with open(STATE_FILE, 'r') as f:
+                    mode = f.read().strip()
+                    if mode != self.current_mode_in_ui:
+                        self.update_home_ui_state(mode)
+            except: pass
+
+        # 2. Configy
+        self.load_configs()
+        # 3. Služby
+        self.refresh_services_only()
+
+    # ... (Zbytek kódu: create_service_row, load_configs, on_save_clicked atd. zůstává stejný) ...
+
+    # Pro úplnost kopíruji zkráceně zbytek metod, aby soubor byl kompletní:
 
     def create_service_row(self, title, label_status, btn_toggle, switch_enable):
         row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
@@ -154,11 +332,6 @@ class AsusSettingsApp(Gtk.Window):
         entry_widget.set_hexpand(True)
         grid.attach(lbl, 0, row, 1, 1)
         grid.attach(entry_widget, 1, row, 1, 1)
-
-    # --- Logika načítání ---
-    def refresh_all(self, widget=None):
-        self.load_configs()
-        self.refresh_services_only()
 
     def refresh_services_only(self):
         active, enabled = self.get_service_status(USER_SERVICE, user=True)
@@ -195,7 +368,6 @@ class AsusSettingsApp(Gtk.Window):
             "PRIMARY_DISPLAY_NAME": "eDP-1", "SECONDARY_DISPLAY_NAME": "eDP-2",
             "LID": "LID",
             "ENABLE_DIRECT_CALL": True,
-            # Tyto hodnoty slouží jako default, pokud uživatel nemá svůj config
             "ENABLE_DBUS": True, "ENABLE_SIGNAL": True
         }
 
@@ -319,7 +491,7 @@ class AsusSettingsApp(Gtk.Window):
             # Finální info
             msg = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.INFO,
                                   buttons=Gtk.ButtonsType.OK, text="Hotovo")
-            msg.format_secondary_text("Konfigurace byla uložena a aplikována.")
+            msg.format_secondary_text("Konfigurace byla úspěšně uložena.")
             msg.run()
             msg.destroy()
 
@@ -348,8 +520,7 @@ class AsusSettingsApp(Gtk.Window):
         self.refresh_services_only()
 
     def show_error(self, message):
-        dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR,
-                                   buttons=Gtk.ButtonsType.OK, text="Chyba")
+        dialog = Gtk.MessageDialog(transient_for=self, flags=0, message_type=Gtk.MessageType.ERROR, buttons=Gtk.ButtonsType.OK, text="Chyba")
         dialog.format_secondary_text(message)
         dialog.run()
         dialog.destroy()
