@@ -1,0 +1,46 @@
+Source: asus-screen-toggle
+Section: utils
+Priority: optional
+Maintainer: Antonin Micka <antonin.micka@gmail.com>
+Build-Depends: debhelper-compat (= 13), gettext, po-debconf
+Standards-Version: 4.6.2
+Homepage: https://github.com/antoninmicka/asus-screen-toggle
+Rules-Requires-Root: no
+
+Package: asus-screen-toggle
+Architecture: all
+Pre-Depends: bash,
+             debconf,
+             usbutils,
+             udev,
+             systemd,
+             grep,
+             sed,
+             awk,
+             console-setup
+Depends: ${misc:Depends},
+         python3,
+         python3-gi,
+         python3-pydbus,
+         gir1.2-gtk-3.0,
+         gir1.2-ayatanaappindicator3-0.1 | gir1.2-appindicator3-0.1,
+         libnotify-bin,
+         inotify-tools,
+         iio-sensor-proxy,
+         usbutils,
+         policykit-1,
+         kscreen,
+         dbus
+Recommends: x11-xserver-utils,
+            wlr-randr,
+            libkscreen-bin,
+            gnome-shell-extension-appindicator
+Description: Utility for managing Asus Zenbook Duo dual-screen modes
+ This utility allows users to toggle the secondary screen on Asus Zenbook Duo
+ laptops, primarily to save battery when the external keyboard is detached.
+ .
+ Features:
+  * Auto-detection of keyboard/charger connection
+  * GUI Settings application
+  * Tray icon / AppIndicator
+  * Systemd integration for sleep/resume
