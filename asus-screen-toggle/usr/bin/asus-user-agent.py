@@ -5,12 +5,31 @@ import signal
 import subprocess
 import warnings
 import time # Nový import pro čas
+import gettext
+import locale
+
+# Nastavení lokalizace
+APP_NAME = "asus-screen-toggle"
+LOCALE_DIR = "/usr/share/locale"
+
+try:
+    # Pokusíme se nastavit systémovou locale
+    locale.setlocale(locale.LC_ALL, '')
+
+    # Inicializace gettext
+    gettext.bindtextdomain(APP_NAME, LOCALE_DIR)
+    gettext.textdomain(APP_NAME)
+    _ = gettext.gettext
+except Exception as e:
+    # Fallback, pokud gettext selže (např. při vývoji mimo instalaci)
+    print(f"Warning: Localization not loaded: {e}")
+    _ = lambda s: s
 
 warnings.filterwarnings("ignore")
 from pydbus.generic import signal as Signal
 
 # --- Importy knihoven ---
-print("DEBUG: Načítám knihovny...")
+print(_("DEBUG: Načítám knihovny..."))
 try:
     import gi
     try:
@@ -21,14 +40,14 @@ try:
             gi.require_version('AppIndicator3', '0.1')
             from gi.repository import AppIndicator3 as AppIndicator
         except (ValueError, ImportError):
-            print("CHYBA: Nenalezena knihovna AppIndicator.")
+            print(_("CHYBA: Nenalezena knihovna AppIndicator."))
             sys.exit(1)
 
     gi.require_version('Gtk', '3.0')
     from gi.repository import GLib, Gtk
     from pydbus import SessionBus
 except Exception as e:
-    print(f"CHYBA při importu knihoven: {e}")
+    print(f_("CHYBA při importu knihoven: {e}"))
     sys.exit(1)
 
 # --- Konfigurace ---
@@ -97,7 +116,7 @@ class StatusNotifierItem:
     @property
     def Id(self): return "asus-screen-toggle"
     @property
-    def Title(self): return "Asus Screen Toggle"
+    def Title(self): return _("Asus Screen Toggle")
     @property
     def Status(self): return self.status
     @property
@@ -109,7 +128,7 @@ class StatusNotifierItem:
     @property
     def Menu(self): return "/StatusNotifierItem"
     @property
-    def ToolTip(self): return (self.icon_name, [], "Asus Screen Toggle", f"Režim: {self.agent.mode}")
+    def ToolTip(self): return (self.icon_name, [], _("Asus Screen Toggle"), _(f"Režim: {self.agent.mode}"))
 
     def Activate(self, x, y):
         """Levý klik (SNI): Spustí přímo nastavení."""
@@ -165,7 +184,7 @@ class AsusAgent:
             try:
                 self._setup_sni()
             except Exception as e:
-                print(f"SNI selhalo, fallback na AppIndicator: {e}")
+                print(f_("SNI failed, fallback na AppIndicator: {e}"))
                 self._setup_appindicator()
                 self.tray_backend = "appindicator"
         else:
@@ -195,7 +214,7 @@ class AsusAgent:
         for path in config_paths:
             if os.path.exists(path):
                 try:
-                    print(f"⚙️ Načítám soubor: {path}")
+                    print(_(f"⚙️ Načítám soubor: {path}"))
                     with open(path, 'r') as f:
                         for line in f:
                             if "=" in line and not line.strip().startswith("#"):
@@ -215,7 +234,7 @@ class AsusAgent:
                     self.last_file_mtime = mtime
                     new_mode = self._load_mode(silent=True)
                     if new_mode != self.mode:
-                        print(f"🔄 Detekována externí změna stavu -> {new_mode}")
+                        print(_(f"🔄 Detekována externí změna stavu -> {new_mode}"))
                         self.mode = new_mode
                         self._set_icon_by_mode()
                         # Zde nespouštíme _run_check, protože předpokládáme,
@@ -230,7 +249,7 @@ class AsusAgent:
                 with open(STATE_FILE, 'r') as f:
                     mode = f.read().strip()
                     if mode in ["automatic-enabled", "enforce-primary-only", "enforce-desktop"]:
-                        print(f"📂 Načten režim ze souboru: {mode}")
+                        print(_(f"📂 Načten režim ze souboru: {mode}"))
                         return mode
             except: pass
         return "automatic-enabled"
@@ -240,9 +259,9 @@ class AsusAgent:
             os.makedirs(STATE_DIR, exist_ok=True)
             with open(STATE_FILE, 'w') as f:
                 f.write(mode)
-            print(f"💾 Režim '{mode}' uložen do {STATE_FILE}")
+            print(_(f"💾 Režim '{mode}' uložen do {STATE_FILE}"))
         except Exception as e:
-            print(f"❌ Chyba configu: {e}")
+            print(_(f"❌ Chyba configu: {e}"))
 
     # --- D-Bus Metody ---
     def Trigger(self):
@@ -253,12 +272,12 @@ class AsusAgent:
 
     def SetMode(self, mode_str):
         if mode_str not in ["automatic-enabled", "enforce-primary-only", "enforce-desktop"]: return "ERROR"
-        print(f"📨 D-Bus SetMode: {mode_str}")
+        print(_(f"📨 D-Bus SetMode: {mode_str}"))
         self.mode = mode_str
         self._save_mode(mode_str)
         self._set_icon_by_mode()
         self._run_check("D-Bus_SetMode")
-        return f"OK: Switched to {mode_str}"
+        return _(f"OK: Switched to {mode_str}")
 
     def Quit(self):
         print("🛑 Požadavek na ukončení...")
@@ -270,7 +289,7 @@ class AsusAgent:
         return False
 
     def _run_check(self, source="Internal"):
-        print(f"🚀 Spouštím logiku ({source})...")
+        print(_(f"🚀 Spouštím logiku ({source})..."))
         try: subprocess.Popen([SCRIPT_PATH])
         except: pass
 
@@ -303,21 +322,21 @@ class AsusAgent:
     def _build_menu(self):
         menu = Gtk.Menu()
 
-        item = Gtk.MenuItem(label="Asus Screen Control")
+        item = Gtk.MenuItem(label=_("Asus Screen Control"))
         item.set_sensitive(False)
         menu.append(item)
         menu.append(Gtk.SeparatorMenuItem())
 
-        r_auto = Gtk.RadioMenuItem(label="🤖 Automaticky")
+        r_auto = Gtk.RadioMenuItem(label=_("🤖 Automaticky"))
         r_auto.connect("toggled", self._on_mode_change, "automatic-enabled")
         menu.append(r_auto)
 
         group = r_auto.get_group()
-        r_prim = Gtk.RadioMenuItem(label="💻 Jen hlavní displej", group=group[0])
+        r_prim = Gtk.RadioMenuItem(label=_("💻 Jen hlavní displej"), group=group[0])
         r_prim.connect("toggled", self._on_mode_change, "enforce-primary-only")
         menu.append(r_prim)
 
-        r_both = Gtk.RadioMenuItem(label="🖥️🖥️ Oba displeje", group=group[0])
+        r_both = Gtk.RadioMenuItem(label=_("🖥️🖥️ Oba displeje"), group=group[0])
         r_both.connect("toggled", self._on_mode_change, "enforce-desktop")
         menu.append(r_both)
 
@@ -326,17 +345,17 @@ class AsusAgent:
         elif self.mode == "enforce-desktop": r_both.set_active(True)
 
         menu.append(Gtk.SeparatorMenuItem())
-        item_sets = Gtk.MenuItem(label="⚙️ Nastavení")
+        item_sets = Gtk.MenuItem(label=_("⚙️ Nastavení"))
         item_sets.connect("activate", lambda _: self._launch_settings())
         menu.append(item_sets)
 
-        item_check = Gtk.MenuItem(label="Zkontrolovat")
+        item_check = Gtk.MenuItem(label=_("Zkontrolovat"))
         item_check.connect("activate", lambda _: self._run_check())
         menu.append(item_check)
 
         menu.append(Gtk.SeparatorMenuItem())
 
-        item_quit = Gtk.MenuItem(label="Ukončit")
+        item_quit = Gtk.MenuItem(label=_("Ukončit"))
         item_quit.connect("activate", lambda _: self.Quit())
         menu.append(item_quit)
 
@@ -351,15 +370,15 @@ class AsusAgent:
         self.indicator.set_menu(self._build_menu())
 
     def _setup_sni(self):
-        print("🔵 Inicializuji KDE StatusNotifierItem (SNI)")
+        print(_("🔵 Inicializuji KDE StatusNotifierItem (SNI)"))
         self.sni = StatusNotifierItem(self)
         try:
             self.bus.register_object("/StatusNotifierItem", self.sni, None)
             self.tray_backend = "sni"
             self._set_icon_by_mode()
-            print("✅ SNI objekt vytvořen.")
+            print(_("✅ SNI objekt vytvořen."))
         except Exception as e:
-            print(f"❌ Chyba SNI: {e}")
+            print(_(f"❌ Chyba SNI: {e}"))
             raise e
 
     def register_sni_watcher(self):
@@ -367,11 +386,11 @@ class AsusAgent:
             try:
                 watcher = self.bus.get("org.kde.StatusNotifierWatcher", "/StatusNotifierWatcher")
                 watcher.RegisterStatusNotifierItem(BUS_NAME)
-                print("✅ SNI registrováno u KDE Watchera.")
+                print(_("✅ SNI registrováno u KDE Watchera."))
                 self.sni.NewIcon()
                 self.sni.NewStatus()
             except Exception as e:
-                print(f"⚠️ Watcher error: {e}")
+                print(_(f"⚠️ Watcher error: {e}"))
 
     def _show_gtk_menu(self, button):
         try:
@@ -379,7 +398,7 @@ class AsusAgent:
             self.menu.show_all()
             self.menu.popup(None, None, None, None, 0, 0)
         except Exception as e:
-            print(f"❌ Chyba při zobrazování menu: {e}")
+            print(_(f"❌ Chyba při zobrazování menu: {e}"))
         return False
 
 
@@ -392,7 +411,7 @@ publication = None
 
 def quit_app(*args):
     global publication, loop
-    print("\n🧹 Ukončuji...")
+    print(_("\n🧹 Ukončuji..."))
     if publication:
         try: publication.unpublish()
         except: pass
@@ -402,19 +421,19 @@ def quit_app(*args):
 def signal_handler():
     # <--- NOVÉ: Kontrola konfigurace pro signály (včetně systémového skriptu)
     if not agent.config["enable_signal"]:
-        print("📩 Signál SIGUSR1 ZAMÍTNUT (vypnuto v configu).")
+        print(_("📩 Signál SIGUSR1 ZAMÍTNUT (vypnuto v configu)."))
         return True
 
     if agent.mode == "automatic-enabled":
-        print("📩 Signál SIGUSR1 přijat!")
+        print(_("📩 Signál SIGUSR1 přijat!"))
         agent._run_check("Signal")
     else:
-        print(f"📩 Signál SIGUSR1 ignorován (Režim ze souboru: {agent.mode}).")
+        print(_(f"📩 Signál SIGUSR1 ignorován (Režim ze souboru: {agent.mode})."))
     return True
 
 def sighup_handler():
     """Obsluha signálu SIGHUP - Reload konfigurace."""
-    print("🔄 Signál SIGHUP přijat: Znovunačítám konfiguraci...")
+    print(_("🔄 Signál SIGHUP přijat: Znovunačítám konfiguraci..."))
     # Zavoláme metodu agenta, která načte soubory znovu
     agent.config = agent._load_config()
     return True # Musí vracet True, aby naslouchání pokračovalo
@@ -424,17 +443,17 @@ if __name__ == "__main__":
 
     dbus_sys = bus.get("org.freedesktop.DBus", "/org/freedesktop/DBus")
     if dbus_sys.NameHasOwner(BUS_NAME):
-        print(f"⚠️ Agent už běží.")
+        print(_(f"⚠️ Agent už běží."))
         sys.exit(0)
 
     agent = AsusAgent(quit_callback=quit_app, bus=bus)
 
     try:
         publication = bus.publish(BUS_NAME, agent)
-        print(f"✅ D-Bus jméno {BUS_NAME} získáno.")
+        print(_(f"✅ D-Bus jméno {BUS_NAME} získáno."))
         agent.register_sni_watcher()
     except Exception as e:
-        print(f"❌ Start selhal: {e}")
+        print(_(f"❌ Start selhal: {e}"))
         sys.exit(1)
 
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGUSR1, signal_handler)
@@ -442,9 +461,9 @@ if __name__ == "__main__":
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, quit_app)
     GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, quit_app)
 
-    print(f"✅ Asus Agent GUI spuštěn.")
-    print(f"   Režim: {agent.mode}")
-    print(f"   PID: {os.getpid()}")
+    print(_(f"✅ Asus Agent GUI spuštěn."))
+    print(_(f"   Režim: {agent.mode}"))
+    print(_(f"   PID: {os.getpid()}"))
 
     # Hlavní smyčka v bloku try/finally pro jistotu
     try:

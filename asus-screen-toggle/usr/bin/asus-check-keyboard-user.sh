@@ -1,10 +1,22 @@
 #!/bin/bash
 
+export TEXTDOMAIN="asus-screen-toggle"
+export TEXTDOMAINDIR="/usr/share/locale"
+
+# Funkce pro zjednodušení (alias)
+function _() {
+    gettext "$1"
+}
+
 # --- 1. Načtení konfigurace ---
 if [[ -f /etc/asus-check-keyboard.cfg ]]; then
     source /etc/asus-check-keyboard.cfg
 else
-    exit 0
+    # Pokud konfig neexistuje, nastavíme defaulty, aby skript nespadl
+    VENDOR_ID="0b05"
+    PRODUCT_ID="1bf2"
+    PRIMARY_DISPLAY_NAME="eDP-1"
+    SECONDARY_DISPLAY_NAME="eDP-2"
 fi
 
 # Pokud máme rotaci z monitor-sensor (uloženou v tmp), načteme ji
@@ -12,6 +24,7 @@ if [[ -f /tmp/asus-rotation ]]; then
     source /tmp/asus-rotation
 else
     # Fallback, pokud neexistuje temp soubor (např. ruční spuštění)
+    # timeout zajistí, že se nezasekne, pokud senzor není dostupný
     DIR=$(timeout 0.5 monitor-sensor --accel | grep -m 1 orientation)
 fi
 
@@ -24,9 +37,9 @@ if [[ -f "$STATE_FILE" ]]; then
     USER_STATE=$(<"$STATE_FILE")
 fi
 
-echo "VID: $VENDOR_ID, PID: $PRODUCT_ID"
-echo "Uživatelský režim: $USER_STATE"
-echo "Senzor: $DIR"
+printf "$(_ "VID: %s, PID: %s")\n" "$VENDOR_ID" "$PRODUCT_ID"
+printf "$(_ "User mode: %s")\n" "$USER_STATE"
+printf "$(_ "Sensor: %s")\n" "$DIR"
 
 # --- 3. Rozhodovací logika (Matrix) ---
 
@@ -34,9 +47,9 @@ echo "Senzor: $DIR"
 PHYSICAL_KEYBOARD_CONNECTED=false
 if lsusb | grep -iq "${VENDOR_ID}:${PRODUCT_ID}"; then
     PHYSICAL_KEYBOARD_CONNECTED=true
-    echo "Fyzická klávesnice: PŘIPOJENA"
+    echo "$(_ "Fyzická klávesnice: PŘIPOJENA")"
 else
-    echo "Fyzická klávesnice: ODPOJENA"
+    echo "$(_ "Fyzická klávesnice: ODPOJENA")"
 fi
 
 # B) Výpočet finálního stavu spodního displeje
@@ -49,15 +62,15 @@ fi
 # C) Aplikace vynucených režimů (Overrides)
 case "$USER_STATE" in
     enforce-primary-only)
-        echo "Vynuceno: Jen primární displej"
+        echo "$(_ "Vynuceno: Jen primární displej")"
         ENABLE_BOTTOM_SCREEN=false
         ;;
     enforce-desktop)
-        echo "Vynuceno: Desktop mód (oba displeje)"
+        echo "$(_ "Vynuceno: Desktop mód (oba displeje)")"
         ENABLE_BOTTOM_SCREEN=true
         ;;
     *)
-        echo "Režim Auto: Ponechávám vypočtený stav."
+        echo "$(_ "Režim Auto: Ponechávám vypočtený stav.")"
         ;;
 esac
 
@@ -86,10 +99,10 @@ if [[ "$user" == "sddm" ]]; then exit 0; fi
 if [[ "$type" == "x11" ]]; then
     # Zde používáme naši vypočtenou proměnnou ENABLE_BOTTOM_SCREEN
     if [[ "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
-        echo "Aplikuji: Single Screen (X11)"
+        echo "$(_ "Aplikuji: Single Screen (X11)")"
         xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate normal --output ${SECONDARY_DISPLAY_NAME} --off
     else
-        echo "Aplikuji: Dual Screen (X11) - $DISPLAY_ROTATION"
+        printf "$(_ "Aplikuji: Dual Screen (X11) - %s")\n" "$DISPLAY_ROTATION"
         case "$DISPLAY_ROTATION" in
             *left*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --right-of ${SECONDARY_DISPLAY_NAME} --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} ;;
             *right*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --left-of ${SECONDARY_DISPLAY_NAME} --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} ;;
@@ -103,11 +116,11 @@ fi
 # === Wayland (KDE) ===
 if [[ "$type" == "wayland" && "$desktop_env" == "KDE" ]]; then
     if [[ "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
-        echo "Aplikuji: Single Screen (KDE)"
+        printf "%s\n" "$(_ "Aplikuji: Single Screen (KDE)")"
         /usr/bin/kscreen-doctor output.${PRIMARY_DISPLAY_NAME}.rotation.normal
         /usr/bin/kscreen-doctor output.${SECONDARY_DISPLAY_NAME}.disable
     else
-        echo "Aplikuji: Dual Screen (KDE) - $DISPLAY_ROTATION"
+        printf "$(_ "Aplikuji: Dual Screen (KDE) - %s")\n" "$DISPLAY_ROTATION"
         /usr/bin/kscreen-doctor output.${PRIMARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
         /usr/bin/kscreen-doctor output.${SECONDARY_DISPLAY_NAME}.enable output.${SECONDARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
 
@@ -145,7 +158,7 @@ if [[ "$type" == "wayland" && "$desktop_env" == "KDE" ]]; then
                 SY=$((PY + PH))
                 ;;
             *)
-                echo "Neplatná orientace: $DISPLAY_ROTATION"
+                printf "$(_ "Neplatná orientace: %s")\n" "$DISPLAY_ROTATION"
                 exit 1
                 ;;
         esac
@@ -154,7 +167,8 @@ if [[ "$type" == "wayland" && "$desktop_env" == "KDE" ]]; then
         echo "$SECONDARY_DISPLAY_NAME $SX,$SY,$SW,$SH"
 
         # --- Výstup a nastavení ---
-        echo "Umísťuji $SECONDARY_DISPLAY_NAME $DISPLAY_ROTATION od $PRIMARY_DISPLAY_NAME na souřadnice $SX,$SY"
+        printf "$(_ "Umísťuji %s (%s) od %s na souřadnice %s,%s")\n" "$SECONDARY_DISPLAY_NAME" "$DISPLAY_ROTATION" "$PRIMARY_DISPLAY_NAME" "$SX" "$SY"
+
         kscreen-doctor output.$PRIMARY_DISPLAY_NAME.position.$PX,$PY output.${PRIMARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
         kscreen-doctor output.$SECONDARY_DISPLAY_NAME.position.$SX,$SY output.${SECONDARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
 
@@ -165,11 +179,11 @@ fi
 # === Wayland (Generic / wlroots) ===
 if [[ "$type" == "wayland" ]]; then
     if [[ "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
-        echo "Aplikuji: Single Screen (Wlr)"
+        echo "$(_ "Aplikuji: Single Screen (Wlr)")"
         wlr-randr --output ${PRIMARY_DISPLAY_NAME} --rotate normal
         wlr-randr --output ${SECONDARY_DISPLAY_NAME} --off
     else
-        echo "Aplikuji: Dual Screen (Wlr) - $DISPLAY_ROTATION"
+        printf "$(_ "Aplikuji: Dual Screen (Wlr) - %s")\n" "$DISPLAY_ROTATION"
         wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION}
         case "$DISPLAY_ROTATION" in
             *left*) wlr-randr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --right-of ${SECONDARY_DISPLAY_NAME} ;;

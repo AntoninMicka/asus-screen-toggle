@@ -1,7 +1,9 @@
 [Desktop Entry]
 Type=Application
 Name=Asus Screen Toggle Agent
+Name[cs]=Asus Screen Toggle Agent
 Comment=Control screen modes on Asus Zenbook Duo
+Comment[cs]=Ovládání režimů obrazovek na Asus Zenbook Duo
 Exec=/usr/bin/asus-screen-toggle-launcher.sh
 Icon=/usr/share/asus-screen-toggle/icon-green.svg
 Terminal=false
