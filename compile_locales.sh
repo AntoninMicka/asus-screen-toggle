@@ -1,21 +1,41 @@
 #!/bin/bash
-# Kompilace .po do .mo
+# gen_locales.sh
+# Skript pro extrakci textů a aktualizaci .po souborů
 
 DOMAIN="asus-screen-toggle"
-SRC_DIR="po"
-# Cílová složka v balíčku
-DEST_DIR="asus-screen-toggle/usr/share/locale"
+PO_DIR="po"
+SRC_DIR="asus-screen-toggle/usr/bin"
 
-echo "Kompiluji překlady..."
+# Seznam podporovaných jazyků
+LANGS=("en" "cs" "fr" "es" "pt" "zh" "ja" "ar")
 
-for po_file in "$SRC_DIR"/*.po; do
-    lang=$(basename "$po_file" .po)
-    # Odstranění .UTF-8 suffixu pokud tam je, systémové složky jsou obvykle jen 'cs', 'en'
-    lang=${lang%%.*}
+mkdir -p "$PO_DIR"
 
-    target_dir="$DEST_DIR/$lang/LC_MESSAGES"
-    mkdir -p "$target_dir"
+echo "1. Extrahování řetězců..."
 
-    echo "  $lang -> $target_dir/$DOMAIN.mo"
-    msgfmt "$po_file" -o "$target_dir/$DOMAIN.mo"
+# Vytvoření šablony (.pot)
+# Python soubory
+xgettext -L Python -k_ --from-code=UTF-8 -o "$PO_DIR/$DOMAIN.pot" "$SRC_DIR"/*.py
+
+# Bash soubory (připojíme k existující šabloně pomocí -j)
+xgettext -L Shell -k_ --from-code=UTF-8 -j -o "$PO_DIR/$DOMAIN.pot" "$SRC_DIR"/*.sh
+
+echo "Šablona vytvořena: $PO_DIR/$DOMAIN.pot"
+
+# Aktualizace/Vytvoření .po souborů pro jednotlivé jazyky
+for lang in "${LANGS[@]}"; do
+    PO_FILE="$PO_DIR/$lang.po"
+
+    if [ -f "$PO_FILE" ]; then
+        echo "🔄 Aktualizuji $lang.po ..."
+        msgmerge -U --backup=none "$PO_FILE" "$PO_DIR/$DOMAIN.pot"
+    else
+        echo "✨ Vytvářím nový $lang.po ..."
+        msginit --no-translator -l "$lang" -o "$PO_FILE" -i "$PO_DIR/$DOMAIN.pot"
+
+        # Oprava charsetu, msginit někdy nastaví ASCII
+        sed -i 's/Content-Type: text\/plain; charset=ASCII/Content-Type: text\/plain; charset=UTF-8/' "$PO_FILE"
+    fi
 done
+
+echo "✅ Hotovo. Nyní přeložte soubory v adresáři $PO_DIR/"

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-24 13:00+0100\n"
+"POT-Creation-Date: 2025-12-24 13:19+0100\n"
 "PO-Revision-Date: 2025-12-24 13:00+0100\n"
 "Last-Translator: Automatically generated\n"
 "Language-Team: none\n"
@@ -340,34 +340,34 @@ msgstr ""
 msgid "Režim Auto: Ponechávám vypočtený stav."
 msgstr ""
 
-#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:99
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:102
 msgid "Aplikuji: Single Screen (X11)"
 msgstr ""
 
-#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:102
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:105
 msgid "Aplikuji: Dual Screen (X11) - %s"
 msgstr ""
 
-#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:116
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:119
 msgid "Aplikuji: Single Screen (KDE)"
 msgstr ""
 
-#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:120
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:123
 msgid "Aplikuji: Dual Screen (KDE) - %s"
 msgstr ""
 
-#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:158
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:161
 msgid "Neplatná orientace: %s"
 msgstr ""
 
-#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:167
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:170
 msgid "Umísťuji %s (%s) od %s na souřadnice %s,%s"
 msgstr ""
 
-#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:179
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:182
 msgid "Aplikuji: Single Screen (Wlr)"
 msgstr ""
 
-#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:183
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:186
 msgid "Aplikuji: Dual Screen (Wlr) - %s"
 msgstr ""

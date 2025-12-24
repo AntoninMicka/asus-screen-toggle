@@ -1,8 +1,11 @@
 #!/bin/bash
 
-echo "🏗️  Příprava lokalizací..."
-# Ujistíme se, že složka existuje
-chmod +x ./compile_locales.sh
-./compile_locales.sh
+# Přidat tuto sekci před sestavením balíčku:
+echo "🌍 Zpracovávám lokalizace..."
+if [ -f "./compile_locales.sh" ]; then
+    ./compile_locales.sh
+else
+    echo "Varování: compile_locales.sh nenalezen!"
+fi
 
 dpkg-deb --root-owner-group --build asus-screen-toggle
