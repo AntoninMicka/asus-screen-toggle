@@ -2,41 +2,33 @@ Template: asus-screen-toggle/primary_display
 Type: select
 Choices: ${Choices}
 Default: ""
-Description: Choose your primary display output
+_Description: Primary display output:
  Select the display output that will be used as the primary screen.
-Description-cs.UTF-8: Zvolte primární výstup displeje
- Zvolte výstup displeje, který bude použit jako primární obrazovka.
 
 Template: asus-screen-toggle/secondary_display
 Type: select
 Choices: ${Choices}
 Default: ""
-Description: Choose your secondary display output
+_Description: Secondary display output:
  Select the display output that will be used as the secondary screen.
-Description-cs.UTF-8: Zvolte sekundární výstup displeje
- Zvolte výstup displeje, který bude použit jako sekundární obrazovka.
 
 Template: asus-screen-toggle/lid
 Type: select
 Choices: ${Choices}
 Default: ""
-Description: Choose the lid device that indicates when the laptop lid is closed
+_Description: Lid device:
  Select the ACPI lid device to monitor for lid open/close events.
-Description-cs.UTF-8: Zvolte zařízení víka (lid), které indikuje zavření notebooku
- Zvolte ACPI zařízení víka, které se má sledovat pro události otevření/zavření.
 
 Template: asus-screen-toggle/usb_kb_notice
 Type: note
-Description: Please connect/dock the external keyboard. Once connected, press OK to continue.
- Connect or dock the external keyboard you want to use. Then press OK to proceed.
-Description-cs.UTF-8: Připojte/dokujte prosím externí klávesnici. Jakmile ji připojíte, pokračujte stiskem OK.
- Připojte nebo zadokujte externí klávesnici, kterou chcete použít, a poté stiskněte OK.
+_Description: External keyboard connection required:
+ Please connect or dock the external keyboard you want to use before
+ proceeding.
 
 Template: asus-screen-toggle/usb_keyboard
 Type: select
 Choices: ${Choices}
 Default: ""
-Description: Select the external keyboard for display switching
- Choose the external USB keyboard that will be used to trigger display switching.
-Description-cs.UTF-8: Vyberte externí klávesnici, která bude sloužit pro přepínání displeje
- Zvolte externí USB klávesnici, která bude použita pro přepínání displeje.
+_Description: External keyboard for switching:
+ Choose the external USB keyboard that will be used to trigger display
+ switching.

@@ -1,0 +1,41 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: asus-screen-toggle\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+msgid "Primary display output:"
+msgstr "Primární výstup displeje:"
+
+msgid "Select the display output that will be used as the primary screen."
+msgstr "Zvolte výstup displeje, který bude použit jako primární obrazovka."
+
+msgid "Secondary display output:"
+msgstr "Sekundární výstup displeje:"
+
+msgid "Select the display output that will be used as the secondary screen."
+msgstr "Zvolte výstup displeje, který bude použit jako sekundární obrazovka."
+
+msgid "Lid device:"
+msgstr "Zařízení víka (LID):"
+
+msgid "Select the ACPI lid device to monitor for lid open/close events."
+msgstr "Zvolte ACPI zařízení víka pro sledování událostí otevření/zavření."
+
+msgid "External keyboard connection required:"
+msgstr "Je vyžadováno připojení externí klávesnice:"
+
+msgid ""
+"Please connect or dock the external keyboard you want to use before "
+"proceeding."
+msgstr "Před pokračováním prosím připojte nebo zadokujte externí klávesnici."
+
+msgid "External keyboard for switching:"
+msgstr "Externí klávesnice pro přepínání:"
+
+msgid ""
+"Choose the external USB keyboard that will be used to trigger display "
+"switching."
+msgstr "Zvolte externí USB klávesnici, která bude spouštět přepínání displejů."

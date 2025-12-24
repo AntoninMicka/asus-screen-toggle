@@ -15,7 +15,7 @@ monitor-sensor | while read -r line; do
     ROTATION="$NEW_ROT"
     echo "Nová orientace: $ROTATION"
     echo "DIR=\"$line\"" > /tmp/asus-rotation
-    /usr/bin/asus-check-keyboard-system.sh
+    /usr/bin/asus-check-keyboard-system
   fi
 
   sleep 3

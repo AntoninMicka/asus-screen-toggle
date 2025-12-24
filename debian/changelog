@@ -7,7 +7,8 @@ asus-screen-toggle (1.0.0) unstable; urgency=medium
       - Vynuceno: Oba displeje (Desktop)
   * [NEW] Perzistence nastavení: Agent si pamatuje zvolený režim i po restartu.
   * [NEW] Moderní SVG ikony indikující aktuální stav v liště.
-  * [ARCH] Přechod z XDG Autostart na Systemd User Unit (asus-user-agent.service).
+  * [ARCH] Přechod z XDG Autostart na Systemd User Unit
+      - (asus-user-agent.service).
   * [ARCH] Implementace D-Bus rozhraní (org.asus.ScreenToggle) pro komunikaci.
   * [FIX] Self-healing launcher: Automatická oprava služby při spuštění z menu.
   * [FIX] Vylepšená detekce grafického sezení (graphical-session.target).

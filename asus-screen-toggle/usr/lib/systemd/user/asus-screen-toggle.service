@@ -1,24 +1,28 @@
 [Unit]
 Description=Asus Screen Toggle User Agent
+# Zajistí, že se služba spustí až ve chvíli, kdy běží grafika
 After=graphical-session.target
 PartOf=graphical-session.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/asus-user-agent.py
+# KLÍČOVÁ OPRAVA: Načte proměnné sezení (WAYLAND_DISPLAY, XDG_RUNTIME_DIR atd.)
+# Tyto proměnné tam KDE/Systemd pošle při startu sezení
+ImportEnvironment=DISPLAY XAUTHORITY WAYLAND_DISPLAY XDG_RUNTIME_DIR
 
-# korektní ukončení (ty už SIGTERM zpracováváš)
+# Doporučuji přidat parametr -u pro Python, aby logy v journalu neběhaly se zpožděním
+ExecStart=/usr/bin/python3 -u /usr/bin/asus-user-agent
+
 KillSignal=SIGTERM
 TimeoutStopSec=5
-
-# restart jen při pádu, ne při normálním ukončení z menu
 Restart=on-failure
 RestartSec=1
 
-# prostředí GUI aplikace
+# Prostředí GUI
 Environment=GTK_USE_PORTAL=1
+# Pokud používáte Wayland v KDE, toto může pomoci stabilitě aplikací v Pythonu/GTK
+Environment=GDK_BACKEND=wayland,x11
 
-# logy do journalu
 StandardOutput=journal
 StandardError=journal
 

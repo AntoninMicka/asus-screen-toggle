@@ -5,10 +5,10 @@ Wants=graphical.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/asus-check-rotation.sh
+ExecStart=/usr/bin/asus-check-rotation
 Restart=on-failure
 RestartSec=3
-ExecReload=/usr/bin/asus-check-keyboard-system.sh
+ExecReload=/usr/bin/asus-check-keyboard-system
 
 [Install]
 WantedBy=default.target

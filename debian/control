@@ -2,21 +2,22 @@ Source: asus-screen-toggle
 Section: utils
 Priority: optional
 Maintainer: Antonin Micka <antonin.micka@gmail.com>
-Build-Depends: debhelper-compat (= 13), gettext, po-debconf
+Build-Depends: debhelper-compat (= 13),
+               gettext,
+               po-debconf,
+               python3,
+               dh-python
 Standards-Version: 4.6.2
 Homepage: https://github.com/antoninmicka/asus-screen-toggle
 Rules-Requires-Root: no
 
 Package: asus-screen-toggle
 Architecture: all
-Pre-Depends: bash,
-             debconf,
+Pre-Depends: debconf,
              usbutils,
              udev,
              systemd,
-             grep,
-             sed,
-             awk,
+             ucf,
              console-setup
 Depends: ${misc:Depends},
          python3,
@@ -24,14 +25,11 @@ Depends: ${misc:Depends},
          python3-pydbus,
          gir1.2-gtk-3.0,
          gir1.2-ayatanaappindicator3-0.1 | gir1.2-appindicator3-0.1,
-         libnotify-bin,
          inotify-tools,
          iio-sensor-proxy,
-         usbutils,
-         policykit-1,
-         kscreen,
          dbus
 Recommends: x11-xserver-utils,
+            kscreen,
             wlr-randr,
             libkscreen-bin,
             gnome-shell-extension-appindicator

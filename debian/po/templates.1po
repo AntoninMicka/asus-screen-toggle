@@ -1,0 +1,33 @@
+msgid "Primary display output:"
+msgstr ""
+
+msgid "Select the display output that will be used as the primary screen."
+msgstr ""
+
+msgid "Secondary display output:"
+msgstr ""
+
+msgid "Select the display output that will be used as the secondary screen."
+msgstr ""
+
+msgid "Lid device:"
+msgstr ""
+
+msgid "Select the ACPI lid device to monitor for lid open/close events."
+msgstr ""
+
+msgid "External keyboard connection required:"
+msgstr ""
+
+msgid ""
+"Please connect or dock the external keyboard you want to use before "
+"proceeding."
+msgstr ""
+
+msgid "External keyboard for switching:"
+msgstr ""
+
+msgid ""
+"Choose the external USB keyboard that will be used to trigger display "
+"switching."
+msgstr ""

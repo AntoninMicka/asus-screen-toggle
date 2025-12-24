@@ -10,4 +10,4 @@ echo "pd $PRIMARY_DISPLAY_NAME"
 echo "sd $SECONDARY_DISPLAY_NAME"
 echo "lid $LID"
 
-envsubst < /usr/share/99-asus-keyboard.rules.template > /usr/lib/udev/rules.d/99-asus-keyboard.rules
+envsubst < /usr/share/asus-screen-toggle/99-asus-keyboard.rules.template > /usr/lib/udev/rules.d/99-asus-keyboard.rules

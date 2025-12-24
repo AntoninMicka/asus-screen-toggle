@@ -73,11 +73,11 @@ fi
             # ale pro jistotu můžeme signál poslat i jemu, pokud by visel na D-Busu.
 
             if [[ "$ENABLE_SIGNAL" == "true" ]]; then
-                AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.sh" | head -n 1)
+                AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent" | head -n 1)
 
                 # Pokud nenajdeme shell skript, zkusíme najít python proces (fallback pro signál)
                 if [[ -z "$AGENT_PID" ]]; then
-                    AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent.py" | head -n 1)
+                    AGENT_PID=$(pgrep -u "$user" -f "asus-user-agent" | head -n 1)
                 fi
 
                 if [[ -n "$AGENT_PID" ]]; then
@@ -110,7 +110,7 @@ fi
                             XDG_RUNTIME_DIR="$runtime_path" \
                             DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
                             DIR="$DIR" \
-                        /usr/bin/asus-check-keyboard-user.sh
+                        /usr/bin/asus-check-keyboard-user
                 fi
 
                 # Pro Wayland potřebujeme WAYLAND_DISPLAY
@@ -129,7 +129,7 @@ fi
                             XDG_RUNTIME_DIR="$runtime_path" \
                             DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
                             DIR="$DIR" \
-                        /usr/bin/asus-check-keyboard-user.sh
+                        /usr/bin/asus-check-keyboard-user
                 fi
             fi
 

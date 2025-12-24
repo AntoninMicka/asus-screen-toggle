@@ -4,6 +4,7 @@ set -e
 . /usr/share/debconf/confmodule
 
 CONFIG_FILE="/etc/asus-check-keyboard.cfg"
+TMP_CONFIG_FILE=$(mktemp)
 
 # helper: pokud prázdné tak fallback
 fallback_if_empty() {
@@ -40,35 +41,31 @@ configure)
         fi
 
         # vytvoření konfigu jen při první instalaci/není-li soubor
-        install -d -m 0755 "$(dirname "$CONFIG_FILE")"
-        cat <<EOF > "$CONFIG_FILE"
+        install -d -m 0755 "$(dirname "$TMP_CONFIG_FILE")"
+        cat <<EOF > "$TMP_CONFIG_FILE"
 VENDOR_ID="$VENDOR_ID"
 PRODUCT_ID="$PRODUCT_ID"
 PRIMARY_DISPLAY_NAME="$PRIMARY_DISPLAY_NAME"
 SECONDARY_DISPLAY_NAME="$SECONDARY_DISPLAY_NAME"
 LID="$LID"
+ENABLE_DIRECT_CALL=false
+ENABLE_DBUS=true
+ENABLE_SIGNAL=false
 EOF
-        # zaregistruj conffile (volitelné, užitečné když soubor vzniká v postinst)
-        if command -v dpkg-maintscript-helper >/dev/null 2>&1; then
-            dpkg-maintscript-helper addconffile "$CONFIG_FILE"
-        fi
+        # 2. Registrace souboru přes ucf (toto vyřeší chyby Lintianu)
+        ucf --debconf-ok "$TMP_CONFIG" "$CONFIG_FILE"
+        uccheck --debconf-ok "$CONFIG_FILE"
+        rm -f "$TMP_CONFIG"
     else
         # soubor již existuje – zachováme ho, pokud uživatel upravoval
         echo "Konfig $CONFIG_FILE již existuje, nebude přepsán."
     fi
 
-    /usr/bin/asus-check-keyboard-genrules.sh
+    asus-check-keyboard-genrules
 
     if command -v udevadm >/dev/null; then
       udevadm control --reload-rules
       udevadm trigger
-    fi
-
-    if [ "$(ps -p 1 -o comm=)" = "systemd" ]; then
-      /usr/bin/systemctl enable asus-bottom-screen-init.service
-      /usr/bin/systemctl start asus-bottom-screen-init.service
-    else
-       echo "systemd not running, enable service later."
     fi
     ;;
 *)
@@ -77,4 +74,6 @@ EOF
 esac
 
 #DEBHELPER#
+
+db_stop
 exit 0

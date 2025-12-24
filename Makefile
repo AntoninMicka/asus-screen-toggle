@@ -24,13 +24,18 @@ compile-locales:
 install:
 	# 1. Instalace binárek (Python + Bash)
 	install -d $(DESTDIR)$(PREFIX)/bin
-	install -m 755 $(SRC_DIR)/usr/bin/*.py $(DESTDIR)$(PREFIX)/bin/
-	install -m 755 $(SRC_DIR)/usr/bin/*.sh $(DESTDIR)$(PREFIX)/bin/
+	install -m 755 asus-screen-toggle/usr/bin/asus-user-agent.py $(DESTDIR)$(PREFIX)/bin/asus-user-agent
+	install -m 755 asus-screen-toggle/usr/bin/asus-screen-settings.py $(DESTDIR)$(PREFIX)/bin/asus-screen-settings
+	install -m 755 asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-user
+	install -m 755 asus-screen-toggle/usr/bin/asus-check-keyboard-system.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-system
+	install -m 755 asus-screen-toggle/usr/bin/asus-check-keyboard-genrules.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-genrules
+	install -m 755 asus-screen-toggle/usr/bin/asus-screen-toggle-launcher.sh $(DESTDIR)$(PREFIX)/bin/asus-screen-toggle-launcher
+	install -m 755 asus-screen-toggle/usr/bin/asus-check-rotation.sh $(DESTDIR)$(PREFIX)/bin/asus-check-rotation
 
 	# 2. Instalace sdílených dat (Ikony, Template)
 	install -d $(DESTDIR)$(PREFIX)/share/asus-screen-toggle
+	install -m 644 asus-screen-toggle/usr/share/99-asus-keyboard.rules.template $(DESTDIR)$(PREFIX)/share/asus-screen-toggle/
 	install -m 644 $(SRC_DIR)/usr/share/asus-screen-toggle/*.svg $(DESTDIR)$(PREFIX)/share/asus-screen-toggle/
-	install -m 644 $(SRC_DIR)/usr/share/99-asus-keyboard.rules.template $(DESTDIR)$(PREFIX)/share/
 
 	# 3. Instalace Desktop souborů
 	install -d $(DESTDIR)$(PREFIX)/share/applications
