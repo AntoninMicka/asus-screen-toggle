@@ -31,7 +31,7 @@ jobs:
         dpkg-buildpackage -us -uc -b
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: asus-screen-toggle-deb
         path: ../*.deb
