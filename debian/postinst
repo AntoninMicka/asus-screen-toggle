@@ -3,7 +3,8 @@ set -e
 
 . /usr/share/debconf/confmodule
 
-CONFIG_FILE="/etc/asus-check-keyboard.cfg"
+CONFIG_FILE_OLD="/etc/asus-check-keyboard.cfg"
+CONFIG_FILE="/etc/asus-screen-toggle.conf"
 TMP_CONFIG_FILE=$(mktemp)
 
 # helper: pokud prázdné tak fallback
@@ -19,6 +20,11 @@ fallback_if_empty() {
 
 case "$1" in
 configure)
+
+    if [ -f "$CONFIG_FILE_OLD" ]; then
+        mv "$CONFIG_FILE_OLD" "$CONFIG_FILE"
+    fi
+
     # --- pouze pokud soubor neexistuje ---
     if [ ! -e "$CONFIG_FILE" ]; then
         # získání hodnot z debconf
@@ -52,10 +58,11 @@ ENABLE_DIRECT_CALL=false
 ENABLE_DBUS=true
 ENABLE_SIGNAL=false
 EOF
-        # 2. Registrace souboru přes ucf (toto vyřeší chyby Lintianu)
-        ucf --debconf-ok "$TMP_CONFIG" "$CONFIG_FILE"
-        uccheck --debconf-ok "$CONFIG_FILE"
-        rm -f "$TMP_CONFIG"
+        # 2. Registrace souboru přes ucf
+        ucf --debconf-ok "$TMP_CONFIG_FILE" "$CONFIG_FILE"
+        # ucfr zaregistruje, že tento soubor patří tvému balíčku
+        ucfr asus-screen-toggle "$CONFIG_FILE"
+        rm -f "$TMP_CONFIG_FILE"
     else
         # soubor již existuje – zachováme ho, pokud uživatel upravoval
         echo "Konfig $CONFIG_FILE již existuje, nebude přepsán."

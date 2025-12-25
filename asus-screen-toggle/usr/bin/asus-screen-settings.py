@@ -45,8 +45,8 @@ USER_SERVICE = "asus-screen-toggle.service"
 SYSTEM_SERVICE = "asus-bottom-screen-init.service"
 
 # Cesty ke konfiguracím
-USER_CONFIG_FILE = os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
-SYSTEM_CONFIG_FILE = "/etc/asus-check-keyboard.cfg"
+SYSTEM_CONFIG_FILE = "/etc/asus-screen-toggle.conf"
+USER_CONFIG_FILE = os.path.expanduser("~/.config/asus-screen-toggle/user.conf")
 
 # Cesty pro logiku přepínání (stejné jako v User Agent)
 STATE_DIR = os.path.expanduser("~/.local/state/asus-check-keyboard")
@@ -433,7 +433,7 @@ class AsusSettingsApp(Gtk.Window):
 
         # Bonus: tooltip pro vysvětlení
         if not sys_signal_active:
-            self.user_chk_signal.set_tooltip_text(_("Zakázáno správcem v /etc/asus-check-keyboard.cfg"))
+            self.user_chk_signal.set_tooltip_text(_("Zakázáno správcem v /etc/asus-screen-toggle.conf"))
 
 
     def _parse_config_file(self, filepath):

@@ -12,8 +12,8 @@ ENABLE_SIGNAL="false"
 USER_BIN=$(command -v asus-check-keyboard-user || echo "/usr/bin/asus-check-keyboard-user")
 
 # --- 1. Načtení konfigurace ---
-if [[ -f /etc/asus-check-keyboard.cfg ]]; then
-    source /etc/asus-check-keyboard.cfg
+if [[ -f /etc/asus-screen-toggle.conf ]]; then
+    source /etc/asus-screen-toggle.conf
 else
     exit 0
 fi

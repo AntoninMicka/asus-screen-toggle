@@ -9,8 +9,8 @@ function _() {
 }
 
 # --- 1. Načtení konfigurace ---
-if [[ -f /etc/asus-check-keyboard.cfg ]]; then
-    source /etc/asus-check-keyboard.cfg
+if [[ -f /etc/asus-screen-toggle.conf ]]; then
+    source /etc/asus-screen-toggle.conf
 else
     # Pokud konfig neexistuje, nastavíme defaulty, aby skript nespadl
     VENDOR_ID="0b05"

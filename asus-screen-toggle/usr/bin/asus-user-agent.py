@@ -67,8 +67,8 @@ SETTINGS_PATH = shutil.which(SETTINGS_NAME) or f"/usr/bin/{SETTINGS_NAME}"
 ICON_PATH = "/usr/share/asus-screen-toggle"
 STATE_DIR = os.path.expanduser("~/.local/state/asus-check-keyboard")
 STATE_FILE = os.path.join(STATE_DIR, "state")
-USER_CONFIG = os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
-SYS_CONFIG = "/etc/asus-check-keyboard.cfg"
+SYS_CONFIG = "/etc/asus-screen-toggle.conf"
+USER_CONFIG = os.path.expanduser("~/.config/asus-screen-toggle/user.conf")
 
 # Ikony
 ICON_AUTO_NAME = "icon-green"
