@@ -29,11 +29,20 @@ jobs:
 
     - name: Build Debian Package
       run: |
-        # Sestavení balíčku bez podepisování (pro CI ideální)
         dpkg-buildpackage -us -uc -b
+        # Přesuneme balíčky z nadřazené složky do aktuální složky 'dist'
+        mkdir -p dist
+        mv ../*.deb dist/
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
+    - name: Upload Artifact (Always)
+      uses: actions/upload-artifact@v3
       with:
         name: asus-screen-toggle-deb
-        path: ../*.deb
+        path: dist/*.deb
+
+    - name: Create Release (Only on Tags)
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/*.deb
+        generate_release_notes: true
