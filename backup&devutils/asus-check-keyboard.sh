@@ -15,6 +15,8 @@ SECONDARY_DISPLAY_NAME="eDP-2"
 DIR=$(timeout 2 monitor-sensor --accel | grep orientation)
 DISPLAY_ROTATION="normal"
 
+KSCREEN_BIN=$(command -v kscreen-doctor || echo "/usr/bin/kscreen-doctor")
+
 case "$DIR" in
 *normal*)
     DISPLAY_ROTATION="normal"
@@ -110,7 +112,7 @@ esac
                     env WAYLAND_DISPLAY="$wayland" \
                         XDG_RUNTIME_DIR="$runtime_dir" \
                         DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
-                        /usr/bin/kscreen-doctor output.${PRIMARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
+                        $KSCREEN_BIN output.${PRIMARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
 
                 if lsusb | grep -iq "${VENDOR_ID}:${PRODUCT_ID}"; then
                     echo "Klávesnice detekována, vypínám spodní displej..."
@@ -118,14 +120,14 @@ esac
                         env WAYLAND_DISPLAY="$wayland" \
                             XDG_RUNTIME_DIR="$runtime_dir" \
                             DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
-                            /usr/bin/kscreen-doctor output.${SECONDARY_DISPLAY_NAME}.disable
+                            $KSCREEN_BIN output.${SECONDARY_DISPLAY_NAME}.disable
                 else
                     echo "Klávesnice není připojena, zapínám spodní displej..."
                     sudo -u "$user" \
                         env WAYLAND_DISPLAY="$wayland" \
                             XDG_RUNTIME_DIR="$runtime_dir" \
                             DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
-                            /usr/bin/kscreen-doctor output.${SECONDARY_DISPLAY_NAME}.enable output.${SECONDARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
+                            $KSCREEN_BIN output.${SECONDARY_DISPLAY_NAME}.enable output.${SECONDARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
                     # --- Získání geometrie primárního výstupu ---
                     read PX PY PW PH <<< $(
                         sudo -u "$user" \
@@ -184,12 +186,12 @@ esac
                         env WAYLAND_DISPLAY="$wayland" \
                             XDG_RUNTIME_DIR="$runtime_dir" \
                             DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
-                            kscreen-doctor output.$PRIMARY_DISPLAY_NAME.position.$PX,$PY output.${PRIMARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
+                            $KSCREEN_BIN output.$PRIMARY_DISPLAY_NAME.position.$PX,$PY output.${PRIMARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
                     sudo -u "$user" \
                         env WAYLAND_DISPLAY="$wayland" \
                             XDG_RUNTIME_DIR="$runtime_dir" \
                             DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
-                            kscreen-doctor output.$SECONDARY_DISPLAY_NAME.position.$SX,$SY output.${SECONDARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
+                            $KSCREEN_BIN output.$SECONDARY_DISPLAY_NAME.position.$SX,$SY output.${SECONDARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
                 fi
             fi
 

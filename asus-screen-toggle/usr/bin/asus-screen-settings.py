@@ -51,7 +51,9 @@ SYSTEM_CONFIG_FILE = "/etc/asus-check-keyboard.cfg"
 # Cesty pro logiku přepínání (stejné jako v User Agent)
 STATE_DIR = os.path.expanduser("~/.local/state/asus-check-keyboard")
 STATE_FILE = os.path.join(STATE_DIR, "state")
-SCRIPT_PATH = "/usr/bin/asus-check-keyboard-user"
+SCRIPT_PATH = shutil.which("asus-check-keyboard-user") or "/usr/bin/asus-check-keyboard-user"
+
+GENRULES_PATH = shutil.which("asus-check-keyboard-genrules") or "/usr/bin/asus-check-keyboard-genrules"
 
 # Cesty k ikonám
 ICON_PATH = "/usr/share/asus-screen-toggle"
@@ -510,7 +512,7 @@ class AsusSettingsApp(Gtk.Window):
                     # 2. Reloadnout pravidla (pokud 1. prošla)
                     # 3. Triggerovat události (pokud 2. prošla)
                     full_cmd = (
-                        "/usr/bin/asus-check-keyboard-genrules && "
+                        "&GENRULES_PATH && "
                         "udevadm control --reload-rules && "
                         "udevadm trigger"
                     )

@@ -52,7 +52,8 @@ except Exception as e:
 
 # --- Konfigurace ---
 BUS_NAME = "org.asus.ScreenToggle"
-SCRIPT_PATH = "/usr/bin/asus-check-keyboard-user"
+SCRIPT_PATH = shutil.which("asus-check-keyboard-user") or "/usr/bin/asus-check-keyboard-user"
+SETTINGS_PATH = shutil.which("asus-screen-settings") or "/usr/bin/asus-screen-settings"
 APP_ID = "asus-screen-toggler"
 ICON_NAME = "input-tablet"
 ICON_PATH = "/usr/share/asus-screen-toggle"
@@ -290,7 +291,7 @@ class AsusAgent:
         self.quit_callback()
 
     def _launch_settings(self):
-        try: subprocess.Popen(["/usr/bin/asus-screen-settings"])
+        try: subprocess.Popen([SETTINGS_PATH])
         except: pass
         return False
 

@@ -2,6 +2,8 @@
 
 ROTATION=""
 
+CHECH_BIN=$(command -v asus-check-keyboard-system || echo "/usr/bin/asus-check-keyboard-system")
+
 monitor-sensor | while read -r line; do
   case "$line" in
     *"normal"*)      NEW_ROT="normal" ;;
@@ -15,7 +17,7 @@ monitor-sensor | while read -r line; do
     ROTATION="$NEW_ROT"
     echo "Nová orientace: $ROTATION"
     echo "DIR=\"$line\"" > /tmp/asus-rotation
-    /usr/bin/asus-check-keyboard-system
+    $CHECH_BIN
   fi
 
   sleep 3

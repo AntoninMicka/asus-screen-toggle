@@ -8,6 +8,9 @@ ENABLE_DIRECT_CALL="false"
 ENABLE_DBUS="true"
 ENABLE_SIGNAL="false"
 
+
+USER_BIN=$(command -v asus-check-keyboard-user || echo "/usr/bin/asus-check-keyboard-user")
+
 # --- 1. Načtení konfigurace ---
 if [[ -f /etc/asus-check-keyboard.cfg ]]; then
     source /etc/asus-check-keyboard.cfg
@@ -110,7 +113,7 @@ fi
                             XDG_RUNTIME_DIR="$runtime_path" \
                             DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
                             DIR="$DIR" \
-                        /usr/bin/asus-check-keyboard-user
+                        $USER_BIN
                 fi
 
                 # Pro Wayland potřebujeme WAYLAND_DISPLAY
@@ -129,7 +132,7 @@ fi
                             XDG_RUNTIME_DIR="$runtime_path" \
                             DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
                             DIR="$DIR" \
-                        /usr/bin/asus-check-keyboard-user
+                        $USER_BIN
                 fi
             fi
 
