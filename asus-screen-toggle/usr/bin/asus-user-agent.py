@@ -199,7 +199,7 @@ class AsusAgent:
         """
         Načte konfiguraci s prioritou:
         1. Defaultní hodnoty (v kódu)
-        2. Systémová konfigurace (/etc/asus-screen-toggle.conf)
+        2. Systémová konfigurace (/etc/asus-check-keyboard.cfg)
         3. Uživatelská konfigurace (~/.config/asus-screen-toggle/config.conf)
         """
         # 1. Defaultní hodnoty
@@ -207,7 +207,7 @@ class AsusAgent:
 
         # Seznam souborů v pořadí, jak se mají aplikovat (poslední vyhrává)
         config_paths = [
-            "/etc/asus-screen-toggle.conf",
+            "/etc/asus-check-keyboard.cfg",
             os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
         ]
 
@@ -219,9 +219,15 @@ class AsusAgent:
                         for line in f:
                             if "=" in line and not line.strip().startswith("#"):
                                 key, val = line.strip().split("=", 1)
-                                if key.strip().upper() == "ENABLE_DBUS": cfg["enable_dbus"] = (val.strip().lower() == "true")
-                                if key.strip().upper() == "ENABLE_SIGNAL": cfg["enable_signal"] = (val.strip().lower() == "true")
-                except: pass
+                                key = key.strip().upper()
+                                is_true = (val.strip().lower() == "true")
+
+                                if key == "ENABLE_DBUS": cfg["enable_dbus"] = is_true and cfg["enable_dbus"]
+                                elif key == "ENABLE_SIGNAL": cfg["enable_signal"] = (is_true and cfg["enable_signal"]
+                except Exception as e:
+                    print(f"Chyba při čtení {path}: {e}")
+
+        print(_(f"Finální stav agenta: DBUS={cfg['enable_dbus']}, SIGNAL={cfg['enable_signal']}"))
         return cfg
 
     def _monitor_file_change(self):

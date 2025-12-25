@@ -46,7 +46,7 @@ SYSTEM_SERVICE = "asus-bottom-screen-init.service"
 
 # Cesty ke konfiguracím
 USER_CONFIG_FILE = os.path.expanduser("~/.config/asus-screen-toggle/config.conf")
-SYSTEM_CONFIG_FILE = "/etc/asus-screen-toggle.conf"
+SYSTEM_CONFIG_FILE = "/etc/asus-check-keyboard.cfg"
 
 # Cesty pro logiku přepínání (stejné jako v User Agent)
 STATE_DIR = os.path.expanduser("~/.local/state/asus-check-keyboard")
@@ -196,6 +196,9 @@ class AsusSettingsApp(Gtk.Window):
         self.add_config_row(grid_hw, row, _("Sekundární displej:"), self.entry_secondary, _("Např. eDP-2")); row+=1
         self.add_config_row(grid_hw, row, _("Senzor víka:"), self.entry_lid, _("Např. LID nebo LID0")); row+=1
 
+        # Propojení checkboxů pro okamžitou odezvu v UI
+        self.sys_chk_dbus.connect("toggled", lambda w: self.user_chk_dbus.set_sensitive(w.get_active()))
+        self.sys_chk_signal.connect("toggled", lambda w: self.user_chk_signal.set_sensitive(w.get_active()))
 
         # --- Spodní lišta tlačítek ---
         bbox = Gtk.ButtonBox(layout_style=Gtk.ButtonBoxStyle.END)
@@ -399,22 +402,36 @@ class AsusSettingsApp(Gtk.Window):
         self.entry_primary.set_text(str(sys_data.get("PRIMARY_DISPLAY_NAME", "")))
         self.entry_secondary.set_text(str(sys_data.get("SECONDARY_DISPLAY_NAME", "")))
         self.entry_lid.set_text(str(sys_data.get("LID", "")))
-        self.sys_chk_direct.set_active(sys_data.get("ENABLE_DIRECT_CALL") is True)
-        self.sys_chk_dbus.set_active(sys_data.get("ENABLE_DBUS") is True)
-        self.sys_chk_signal.set_active(sys_data.get("ENABLE_SIGNAL") is True)
 
-        # 2. Načíst UŽIVATELSKÉ nastavení (přebíjí systémové pro DBUS/SIGNAL)
+        # Systémové checkboxy
+        sys_dbus_active = sys_data.get("ENABLE_DBUS") is True
+        sys_signal_active = sys_data.get("ENABLE_SIGNAL") is True
+
+        self.sys_chk_direct.set_active(sys_data.get("ENABLE_DIRECT_CALL") is True)
+        self.sys_chk_dbus.set_active(sys_dbus_active)
+        self.sys_chk_signal.set_active(sys_signal_active)
+
+        # 2. Načíst UŽIVATELSKÉ nastavení
         user_data = {}
         if os.path.exists(USER_CONFIG_FILE):
             user_data = self._parse_config_file(USER_CONFIG_FILE)
 
-        # Aplikace do GUI - User Checkboxy
-        # Použijeme hodnotu z user_data, pokud není, bereme ze sys_data (default)
-        dbus_val = user_data.get("ENABLE_DBUS", sys_data.get("ENABLE_DBUS"))
-        signal_val = user_data.get("ENABLE_SIGNAL", sys_data.get("ENABLE_SIGNAL"))
+        # Logika AND detekovaná přímo v UI:
+        # Pokud je SYSTÉM False, uživatel nesmí zapnout.
 
-        self.user_chk_dbus.set_active(dbus_val is True)
-        self.user_chk_signal.set_active(signal_val is True)
+        # DBUS
+        user_dbus_val = user_data.get("ENABLE_DBUS", sys_dbus_active)
+        self.user_chk_dbus.set_active(user_dbus_val and sys_dbus_active)
+        self.user_chk_dbus.set_sensitive(sys_dbus_active) # Zašedne, pokud systém zakázal
+
+        # SIGNAL
+        user_signal_val = user_data.get("ENABLE_SIGNAL", sys_signal_active)
+        self.user_chk_signal.set_active(user_signal_val and sys_signal_active)
+        self.user_chk_signal.set_sensitive(sys_signal_active) # Zašedne, pokud systém zakázal
+
+        # Bonus: tooltip pro vysvětlení
+        if not sys_signal_active:
+            self.user_chk_signal.set_tooltip_text(_("Zakázáno správcem v /etc/asus-check-keyboard.cfg"))
 
 
     def _parse_config_file(self, filepath):
