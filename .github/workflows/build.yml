@@ -35,7 +35,7 @@ jobs:
         mv ../*.deb dist/
 
     - name: Upload Artifact (Always)
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: asus-screen-toggle-deb
         path: dist/*.deb
