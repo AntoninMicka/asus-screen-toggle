@@ -2,6 +2,7 @@
 Description=ASUS Duo – zapni spodní displej, pokud je klávesnice připojena
 After=graphical.target
 Wants=graphical.target
+Documentation=man:asus-user-agent(1)
 
 [Service]
 Type=simple

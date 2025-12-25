@@ -3,6 +3,7 @@ Description=Asus Screen Toggle User Agent
 # Zajistí, že se služba spustí až ve chvíli, kdy běží grafika
 After=graphical-session.target
 PartOf=graphical-session.target
+Documentation=man:asus-user-agent(1)
 
 [Service]
 Type=simple

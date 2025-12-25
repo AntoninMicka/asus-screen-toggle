@@ -58,5 +58,8 @@ install:
 			$(DESTDIR)$(LOCALE_DIR)/$$lang/LC_MESSAGES/; \
 	done
 
+	install -d $(DESTDIR)$(PREFIX)/share/man/man1
+	install -m 644 asus-screen-toggle/usr/share/man/man1/*.1 $(DESTDIR)$(PREFIX)/share/man/man1/
+
 clean:
 	rm -rf build

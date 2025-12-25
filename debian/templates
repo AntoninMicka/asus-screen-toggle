@@ -21,9 +21,9 @@ _Description: Lid device:
 
 Template: asus-screen-toggle/usb_kb_notice
 Type: note
-_Description: External keyboard connection required:
+_Description: External keyboard connection required
  Please connect or dock the external keyboard you want to use before
- proceeding.
+ proceeding
 
 Template: asus-screen-toggle/usb_keyboard
 Type: select

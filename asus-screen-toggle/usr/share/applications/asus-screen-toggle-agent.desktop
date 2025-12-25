@@ -9,3 +9,4 @@ Icon=/usr/share/asus-screen-toggle/icon-green.svg
 Terminal=false
 Categories=Settings;HardwareSettings;GTK;
 StartupNotify=false
+Keywords=asus;screen;toggle;dual;display;zenbook;

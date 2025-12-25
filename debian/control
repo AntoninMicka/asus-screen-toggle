@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Antonin Micka <antonin.micka@gmail.com>
 Build-Depends: debhelper-compat (= 13),
                gettext,
+               gettext-base,
                po-debconf,
                python3,
                dh-python
@@ -14,6 +15,7 @@ Rules-Requires-Root: no
 Package: asus-screen-toggle
 Architecture: all
 Pre-Depends: debconf,
+             gettext-base,
              usbutils,
              udev,
              systemd,
@@ -29,7 +31,7 @@ Depends: ${misc:Depends},
          iio-sensor-proxy,
          dbus
 Recommends: x11-xserver-utils,
-            kscreen,
+            kscreen-doctor,
             wlr-randr,
             libkscreen-bin,
             gnome-shell-extension-appindicator
