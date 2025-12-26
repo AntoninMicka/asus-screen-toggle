@@ -1,5 +1,6 @@
 asus-screen-toggle (1.0.0-1) unstable; urgency=medium
 
+  * Initial release (Closes: #1124010)
   * [NEW] Kompletní přepis User Agenta do Pythonu (Gtk + AppIndicator).
   * [NEW] Interaktivní menu v systray s možností manuálního přepínání režimů:
       - Automaticky (podle senzorů)
