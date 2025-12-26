@@ -1,37 +1,79 @@
-name: Debian Package Build
+name: Debian Package & Docs Build
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "release/*" ]
+    tags: [ "v*" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "release/*" ]
+
+permissions:
+  contents: write
+  pages: write      # Nutné pro publikaci webu
+  id-token: write   # Nutné pro GitHub Pages
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
-    - name: Install build dependencies
+    - name: Install build & doc dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
+          build-essential \
           debhelper \
           devscripts \
           gettext \
           gettext-base \
           python3-all \
           dh-python \
-          po-debconf
+          po-debconf \
+          ucf \
+          groff  # Nástroj pro převod man -> html
 
     - name: Build Debian Package
       run: |
-        # Sestavení balíčku bez podepisování (pro CI ideální)
         dpkg-buildpackage -us -uc -b
+        mkdir -p dist
+        mv ../*.deb dist/
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+    - name: Generate HTML Documentation
+      run: |
+        mkdir -p public
+        # Převod man stránek do HTML
+        groff -man -Thtml asus-screen-toggle/usr/share/man/man1/asus-user-agent.1 > public/asus-user-agent.html
+        groff -man -Thtml asus-screen-toggle/usr/share/man/man1/asus-screen-settings.1 > public/asus-screen-settings.html
+        groff -man -Thtml asus-screen-toggle/usr/share/man/man1/asus-screen-toggle-launcher.1 > public/asus-screen-toggle-launcher.html
+        # Zkopírování tvého index.html (pokud ho máš v projektu, jinak ho vytvoříme)
+        if [ -f index.html ]; then
+          cp index.html public/
+        else
+          # Nouzový generátor indexu, pokud by chyběl
+          echo "<h1>Asus Screen Toggle Docs</h1><ul><li><a href='asus-user-agent.html'>Agent Manpage</a></li></ul>" > public/index.html
+        fi
+
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v4
       with:
-        name: asus-screen-toggle-deb
-        path: ../*.deb
+        name: build-outputs
+        path: |
+          dist/*.deb
+          public/
+
+    - name: Create Release (Only on Tags)
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: dist/*.deb
+        generate_release_notes: true
+
+    # Nasazení dokumentace na GitHub Pages
+    - name: Deploy to GitHub Pages
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      uses: peaceiris/actions-gh-pages@v4
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public

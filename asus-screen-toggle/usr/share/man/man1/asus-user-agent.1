@@ -1,0 +1,25 @@
+.TH ASUS-USER-AGENT 1 "December 2025" "1.0.1" "User Commands"
+.SH NAME
+asus-user-agent \- Management agent for Asus Zenbook Duo secondary display
+.SH SYNOPSIS
+.B asus-user-agent
+.SH DESCRIPTION
+.B asus-user-agent
+is a background resident program that monitors keyboard connection status and hardware sensors.
+It displays an icon in the notification area (system tray), allowing the user to toggle between automatic mode and forced display on/off states.
+.SH OPTIONS
+The program does not accept any command-line arguments. Configuration is handled via the GUI utility.
+.SH SIGNALS
+.TP
+.B SIGUSR1
+Forces an immediate sensor status check (used by system-level triggers).
+.TP
+.B SIGHUP
+Reloads the configuration files.
+.SH FILES
+.I ~/.config/asus-screen-toggle/user.conf
+.RS
+User preference settings.
+.RE
+.SH SEE ALSO
+.BR asus-screen-settings (1)

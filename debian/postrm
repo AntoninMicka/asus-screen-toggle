@@ -1,0 +1,17 @@
+#!/bin/sh
+set -e
+
+CONFIG_FILE="/etc/asus-check-keyboard.cfg"
+
+if [ "$1" = "purge" ]; then
+    # Odstranění z evidence ucf
+    if command -v ucf >/dev/null; then
+        ucf --purge "$CONFIG_FILE"
+    fi
+    if command -v ucfr >/dev/null; then
+        ucfr --purge asus-screen-toggle "$CONFIG_FILE"
+    fi
+    rm -f "$CONFIG_FILE"
+fi
+
+#DEBHELPER#

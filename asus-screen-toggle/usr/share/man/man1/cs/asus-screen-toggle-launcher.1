@@ -1,0 +1,21 @@
+.TH ASUS-SCREEN-TOGGLE-LAUNCHER 1 "Prosinec 2025" "1.0.1" "Uživatelské příkazy"
+.SH JMÉNO
+asus-screen-toggle-launcher \- Spouštěč agenta pro správu Asus obrazovek
+.SH SYNOPSE
+.B asus-screen-toggle-launcher
+.SH POPIS
+.B asus-screen-toggle-launcher
+je obalový skript (wrapper), který bezpečně spouští uživatelského agenta.
+Před vlastním spuštěním kontroluje, zda již jiná instance agenta neběží,
+a zajišťuje správné nastavení prostředí pro komunikaci s D-Bus a grafickým serverem.
+.PP
+Tento skript je standardně volán automaticky po přihlášení uživatele (přes .desktop soubor
+v autostartu), ale může být spuštěn i ručně pro restartování služby po havárii
+nebo změně konfigurace.
+.SH FUNKCE
+1. Kontrola běžící instance (prevence duplicity).
+2. Inicializace stavových souborů v ~/.local/state.
+3. Spuštění asus-user-agent.
+.SH VIZ TÉŽ
+.BR asus-user-agent (1),
+.BR asus-screen-settings (1)

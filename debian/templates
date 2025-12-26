@@ -1,0 +1,34 @@
+Template: asus-screen-toggle/primary_display
+Type: select
+__choices: ${Choices}
+_description: Primary display output:
+ Select the display output that will be used as the primary screen.
+Default: ""
+
+Template: asus-screen-toggle/secondary_display
+Type: select
+__choices: ${Choices}
+_description: Secondary display output:
+ Select the display output that will be used as the secondary screen.
+Default: ""
+
+Template: asus-screen-toggle/lid
+Type: select
+__choices: ${Choices}
+_description: Lid device:
+ Select the ACPI lid device to monitor for lid open/close events.
+Default: ""
+
+Template: asus-screen-toggle/usb_kb_notice
+Type: note
+_description: External keyboard connection required
+ Please connect or dock the external keyboard you want to use before
+ proceeding
+
+Template: asus-screen-toggle/usb_keyboard
+Type: select
+__choices: ${Choices}
+_description: External keyboard for switching:
+ Choose the external USB keyboard that will be used to trigger display
+ switching.
+Default: ""

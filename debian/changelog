@@ -1,0 +1,70 @@
+asus-screen-toggle (1.0.0-1) unstable; urgency=medium
+
+  * Initial release (Closes: #1124010)
+  * [NEW] Kompletní přepis User Agenta do Pythonu (Gtk + AppIndicator).
+  * [NEW] Interaktivní menu v systray s možností manuálního přepínání režimů:
+      - Automaticky (podle senzorů)
+      - Vynuceno: Jen hlavní displej
+      - Vynuceno: Oba displeje (Desktop)
+  * [NEW] Perzistence nastavení: Agent si pamatuje zvolený režim i po restartu.
+  * [NEW] Moderní SVG ikony indikující aktuální stav v liště.
+  * [ARCH] Přechod z XDG Autostart na Systemd User Unit
+      - (asus-user-agent.service).
+  * [ARCH] Implementace D-Bus rozhraní (org.asus.ScreenToggle) pro komunikaci.
+  * [FIX] Self-healing launcher: Automatická oprava služby při spuštění z menu.
+  * [FIX] Vylepšená detekce grafického sezení (graphical-session.target).
+
+ -- Antonin Micka <antonin.micka@gmail.com>  Mon, 22 Dec 2025 12:00:00 +0100
+
+asus-screen-toggle (0.1.0-1) unstable; urgency=low
+
+  * [ Antonin ]
+  * add user agent
+
+ -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+
+asus-screen-toggle (0.0.6-1) unstable; urgency=low
+
+  * [ Antonin ]
+  * wakeup fix
+  * service fix
+  * devrules fix
+  * add dependencies
+
+ -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+
+asus-screen-toggle (0.0.5-1) unstable; urgency=low
+
+  * [ Antonin ]
+  * some issue
+
+ -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+
+asus-screen-toggle (0.0.4-1) unstable; urgency=low
+
+  * [ Antonin ]
+  * some issue
+
+ -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+
+asus-screen-toggle (0.0.3-1) unstable; urgency=low
+
+  * [ Antonin ]
+  * some issue
+
+ -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+
+asus-screen-toggle (0.0.2-1) unstable; urgency=low
+
+  * [ Antonin ]
+  * some issue
+
+ -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:00:00 +0200
+
+asus-screen-toggle (0.0.1-1) unstable; urgency=low
+
+  * [ Antonin ]
+  * first version, package template
+  * fixed device in script
+
+ -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 08:00:00 +0200

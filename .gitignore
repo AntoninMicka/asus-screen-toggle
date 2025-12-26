@@ -1,1 +1,37 @@
 *.deb
+/asus-screen-toggle.cflags
+/asus-screen-toggle.config
+/asus-screen-toggle.creator
+/asus-screen-toggle.creator.user
+/asus-screen-toggle.cxxflags
+/asus-screen-toggle.files
+/asus-screen-toggle.includes
+/build*/
+
+# Adresář buildu z Makefilu
+/build/
+
+# Debian build artifacts (v adresáři debian/)
+/debian/asus-screen-toggle/
+/debian/.debhelper/
+/debian/*.log
+/debian/*.substvars
+/debian/files
+/debian/debhelper-build-stamp
+
+# Pokud stavíte o úroveň výš, Git je neuvidí,
+# ale pokud byste je měl v kořeni:
+*.deb
+*.changes
+*.buildinfo
+*.dsc
+*.tar.gz
+*.tar.xz
+
+# Dočasné soubory debhelperu
+debian/*.debhelper
+debian/*.debhelper.log
+debian/asus-screen-toggle.substvars
+debian/files
+debian/debhelper-build-stamp
+/debian/asus-screen-toggle/

@@ -1,0 +1,86 @@
+#!/bin/sh
+set -e
+
+. /usr/share/debconf/confmodule
+
+CONFIG_FILE_OLD="/etc/asus-check-keyboard.cfg"
+CONFIG_FILE="/etc/asus-screen-toggle.conf"
+TMP_CONFIG_FILE=$(mktemp)
+
+# helper: pokud prázdné tak fallback
+fallback_if_empty() {
+    val="$1"
+    fallback="$2"
+    if [ -z "$val" ] || [ "$val" = "none" ]; then
+        echo "$fallback"
+    else
+        echo "$val"
+    fi
+}
+
+case "$1" in
+configure)
+
+    if [ -f "$CONFIG_FILE_OLD" ]; then
+        mv "$CONFIG_FILE_OLD" "$CONFIG_FILE"
+    fi
+
+    # --- pouze pokud soubor neexistuje ---
+    if [ ! -e "$CONFIG_FILE" ]; then
+        # získání hodnot z debconf
+        db_get asus-screen-toggle/usb_keyboard
+        SELECTED="$RET"
+        VENDOR_ID="0b05"
+        PRODUCT_ID="1bf2"
+        VENDOR_ID=$(echo "$SELECTED" | cut -d: -f1)
+        PRODUCT_ID=$(echo "$SELECTED" | cut -d: -f2 | cut -d' ' -f1)
+
+        db_get asus-screen-toggle/primary_display
+        PRIMARY_DISPLAY_NAME=$(fallback_if_empty "$RET" "eDP-1")
+        db_get asus-screen-toggle/secondary_display
+        SECONDARY_DISPLAY_NAME=$(fallback_if_empty "$RET" "eDP-2")
+        db_get asus-screen-toggle/lid
+        LID=$(fallback_if_empty "$RET" "LID")
+
+        if [ "$PRIMARY_DISPLAY_NAME" = "$SECONDARY_DISPLAY_NAME" ]; then
+          echo "Upozornění: Primární a sekundární výstup jsou stejné ($PRIMARY_DISPLAY_NAME)" >&2
+        fi
+
+        # vytvoření konfigu jen při první instalaci/není-li soubor
+        install -d -m 0755 "$(dirname "$TMP_CONFIG_FILE")"
+        cat <<EOF > "$TMP_CONFIG_FILE"
+VENDOR_ID="$VENDOR_ID"
+PRODUCT_ID="$PRODUCT_ID"
+PRIMARY_DISPLAY_NAME="$PRIMARY_DISPLAY_NAME"
+SECONDARY_DISPLAY_NAME="$SECONDARY_DISPLAY_NAME"
+LID="$LID"
+ENABLE_DIRECT_CALL=false
+ENABLE_DBUS=true
+ENABLE_SIGNAL=false
+EOF
+        # 2. Registrace souboru přes ucf
+        ucf --debconf-ok "$TMP_CONFIG_FILE" "$CONFIG_FILE"
+        # ucfr zaregistruje, že tento soubor patří tvému balíčku
+        ucfr asus-screen-toggle "$CONFIG_FILE"
+        rm -f "$TMP_CONFIG_FILE"
+    else
+        # soubor již existuje – zachováme ho, pokud uživatel upravoval
+        echo "Konfig $CONFIG_FILE již existuje, nebude přepsán."
+    fi
+
+    asus-check-keyboard-genrules
+
+    if command -v udevadm >/dev/null; then
+      udevadm control --reload-rules
+      udevadm trigger
+    fi
+    ;;
+*)
+    # other states: upgrade, abort, etc. Nic dělat
+    ;;
+esac
+
+#DEBHELPER#
+
+db_stop
+exit 0

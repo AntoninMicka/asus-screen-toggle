@@ -1,0 +1,98 @@
+# Czech translations for asus-screen-toggle package.
+# Copyright (C) 2025 THE asus-screen-toggle'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the asus-screen-toggle package.
+# Antonín Mička <antonin.micka@gmail.com>, 2025.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: asus-screen-toggle\n"
+"Report-Msgid-Bugs-To: asus-screen-toggle@packages.debian.org\n"
+"POT-Creation-Date: 2025-12-26 02:49+0100\n"
+"PO-Revision-Date: 2025-12-26 03:05+0100\n"
+"Last-Translator: Antonín Mička <antonin.micka@gmail.com>\n"
+"Language-Team: Czech <translation-team-cs@lists.sourceforge.net>\n"
+"Language: cs\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
+
+#. Type: select
+#. choices
+#. Type: select
+#. choices
+#. Type: select
+#. choices
+#. Type: select
+#. choices
+#: ../templates:1001 ../templates:2001 ../templates:3001 ../templates:5001
+msgid "${Choices}"
+msgstr "${Choices}"
+
+#. Type: select
+#. description
+#: ../templates:1002
+msgid "Primary display output:"
+msgstr "Primární výstup displeje:"
+
+#. Type: select
+#. description
+#: ../templates:1002
+msgid "Select the display output that will be used as the primary screen."
+msgstr "Vyberte výstup displeje, který bude použit jako hlavní obrazovka."
+
+#. Type: select
+#. description
+#: ../templates:2002
+msgid "Secondary display output:"
+msgstr "Sekundární výstup displeje:"
+
+#. Type: select
+#. description
+#: ../templates:2002
+msgid "Select the display output that will be used as the secondary screen."
+msgstr "Vyberte výstup displeje, který bude použit jako sekundární obrazovka."
+
+#. Type: select
+#. description
+#: ../templates:3002
+msgid "Lid device:"
+msgstr "Zařízení víka (Lid):"
+
+#. Type: select
+#. description
+#: ../templates:3002
+msgid "Select the ACPI lid device to monitor for lid open/close events."
+msgstr "Vyberte ACPI zařízení víka pro sledování událostí otevření/zavření."
+
+#. Type: note
+#. description
+#: ../templates:4001
+msgid "External keyboard connection required"
+msgstr "Je vyžadováno připojení externí klávesnice"
+
+#. Type: note
+#. description
+#: ../templates:4001
+msgid ""
+"Please connect or dock the external keyboard you want to use before "
+"proceeding"
+msgstr ""
+"Před pokračováním prosím připojte nebo vložte do doku externí klávesnici, "
+"kterou chcete používat."
+
+#. Type: select
+#. description
+#: ../templates:5002
+msgid "External keyboard for switching:"
+msgstr "Externí klávesnice pro přepínání:"
+
+#. Type: select
+#. description
+#: ../templates:5002
+msgid ""
+"Choose the external USB keyboard that will be used to trigger display "
+"switching."
+msgstr ""
+"Vyberte externí USB klávesnici, která bude sloužit jako spouštěč pro "
+"přepínání displejů."

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Asus Screen Settings
+Name[cs]=Nastavení obrazovek Asus
+Name[fr]=Paramètres de l'écran Asus
+Name[es]=Configuración de pantalla Asus
+Comment=Control dual screen modes
+Comment[cs]=Nastavení pro Asus Zenbook Duo Screen Toggle
+Exec=/usr/bin/asus-screen-settings
+Icon=/usr/share/asus-screen-toggle/icon-blue.svg
+Terminal=false
+Type=Application
+Categories=Settings;HardwareSettings;
+Keywords=asus;screen;toggle;dual;display;zenbook;

@@ -1,0 +1,385 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: asus-screen-toggle 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-12-24 13:19+0100\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:30
+msgid "Error: Gtk 3.0 not found."
+msgstr "Error: Gtk 3.0 not found."
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:39
+msgid "Warning: pydbus not found. Direct D-Bus communication disabled."
+msgstr "Warning: pydbus not found. Direct D-Bus communication disabled."
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:42
+msgid "Nastavení Asus Screen Toggle"
+msgstr "Asus Screen Toggle Settings"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:83
+msgid "<span size='x-large' weight='bold'>Rychlé ovládání</span>"
+msgstr "<span size='x-large' weight='bold'>Quick Controls</span>"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:92
+msgid "Automaticky"
+msgstr "Automatic"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:92
+msgid "Senzory"
+msgstr "Sensors"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:96
+msgid "Jen Hlavní"
+msgstr "Primary Only"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:96
+msgid "Vypnout spodní"
+msgstr "Disable Bottom"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:100
+msgid "Oba Displeje"
+msgstr "Dual Screen"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:100
+msgid "Vynutit zapnutí"
+msgstr "Force Enable"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:107
+msgid "🔄 Spustit okamžitou kontrolu"
+msgstr "🔄 Run immediate check"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:117
+msgid "Služby & Config"
+msgstr "Services & Config"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:120
+msgid "Stav Služeb"
+msgstr "Service Status"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:133
+msgid "Uživatelská služba (Agent)"
+msgstr "User Service (Agent)"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:143
+msgid "Systémová služba (Init)"
+msgstr "System Service (Init)"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:146
+#, fuzzy
+msgid "Uživatelská konfigurace"
+msgstr "User Configuration"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:152
+msgid "<i>Ukládá se do ~/.config/asus-screen-toggle/config.conf</i>"
+msgstr "<i>Saved to ~/.config/asus-screen-toggle/config.conf</i>"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:155
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:171
+msgid "Povolit D-Bus ovládání (ENABLE_DBUS)"
+msgstr "Enable D-Bus Control (ENABLE_DBUS)"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:156
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:172
+msgid "Povolit reakci na signály/rotaci (ENABLE_SIGNAL)"
+msgstr "Enable Signal/Rotation Reaction (ENABLE_SIGNAL)"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:165
+msgid "Hardware (Systém)"
+msgstr "Hardware (System)"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:167
+msgid ""
+"<i>Tyto změny se zapíší do /etc/asus-screen-toggle.conf (vyžaduje root).</i>"
+msgstr "<i>These changes will be written to /etc/asus-screen-toggle.conf (requires root).</i>"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:173
+msgid "Povolit přímé volání z Udev (ENABLE_DIRECT_CALL)"
+msgstr "Enable Direct Udev Call (ENABLE_DIRECT_CALL)"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:193
+msgid "Vendor ID:"
+msgstr "Vendor ID:"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:193
+msgid "Např. 0b05"
+msgstr "e.g. 0b05"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:194
+msgid "Product ID:"
+msgstr "Product ID:"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:194
+msgid "Např. 1bf2"
+msgstr "e.g. 1bf2"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:195
+msgid "Hlavní displej:"
+msgstr "Primary Display:"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:195
+msgid "Např. eDP-1"
+msgstr "e.g. eDP-1"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:196
+msgid "Sekundární displej:"
+msgstr "Secondary Display:"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:196
+msgid "Např. eDP-2"
+msgstr "e.g. eDP-2"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:197
+msgid "Senzor víka:"
+msgstr "Lid Sensor:"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:197
+msgid "Např. LID nebo LID0"
+msgstr "e.g. LID or LID0"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:204
+msgid "Obnovit"
+msgstr "Refresh"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:208
+msgid "Uložit vše"
+msgstr "Save All"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:295
+msgid "Fallback: Zapisuji přímo do souboru..."
+msgstr "Fallback: Writing directly to file..."
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:344
+msgid "Boot:"
+msgstr "Boot:"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:369
+msgid "active"
+msgstr "active"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:369
+msgid "enabled"
+msgstr "enabled"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:377
+msgid "<span foreground='green'><b>Běží</b></span>"
+msgstr "<span foreground='green'><b>Running</b></span>"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:378
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:522
+msgid "Zastavit"
+msgstr "Stop"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:380
+msgid "<span foreground='red'>Zastaveno</span>"
+msgstr "<span foreground='red'>Stopped</span>"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:381
+msgid "Spustit"
+msgstr "Start"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:444
+#, fuzzy
+msgid "# Uživatelská konfigurace Asus Screen Toggle\n"
+msgstr "# Asus Screen Toggle User Configuration\n"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:454
+msgid "# Vygenerováno Asus Screen Settings - Systémová konfigurace"
+msgstr "# Generated by Asus Screen Settings - System Configuration"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:480
+msgid "Aktualizovat Udev pravidla?"
+msgstr "Update Udev rules?"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:482
+msgid ""
+"Změnili jste systémové nastavení. Pro správnou funkčnost detekce hardwaru je "
+"třeba přegenerovat a načíst pravidla Udev.\n"
+"\n"
+"Chcete to provést nyní? (Vyžaduje heslo)"
+msgstr ""
+"System settings have changed. To ensure correct hardware detection, "
+"Udev rules need to be regenerated and reloaded.\n"
+"\n"
+"Do you want to do this now? (Requires password)"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:505
+msgid "Nepodařilo se přegenerovat a aplikovat pravidla."
+msgstr "Failed to regenerate and apply rules."
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:512
+msgid "Hotovo"
+msgstr "Done"
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:513
+msgid "Konfigurace byla úspěšně uložena."
+msgstr "Configuration saved successfully."
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:518
+msgid "Nepodařilo se uložit systémovou konfiguraci (zamítnuto)."
+msgstr "Failed to save system configuration (permission denied)."
+
+#: asus-screen-toggle/usr/bin/asus-screen-settings.py:542
+msgid "Chyba"
+msgstr "Error"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:32
+msgid "DEBUG: Načítám knihovny..."
+msgstr "DEBUG: Loading libraries..."
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:43
+msgid "CHYBA: Nenalezena knihovna AppIndicator."
+msgstr "ERROR: AppIndicator library not found."
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:119
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:131
+#, fuzzy
+msgid "Asus Screen Toggle"
+msgstr "Asus Screen Toggle"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:325
+msgid "Asus Screen Control"
+msgstr "Asus Screen Control"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:330
+#, fuzzy
+msgid "🤖 Automaticky"
+msgstr "🤖 Automatic"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:335
+#, fuzzy
+msgid "💻 Jen hlavní displej"
+msgstr "💻 Primary screen only"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:339
+msgid "🖥️🖥️ Oba displeje"
+msgstr "🖥️🖥️ Both displays"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:348
+msgid "⚙️ Nastavení"
+msgstr "⚙️ Settings"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:352
+msgid "Zkontrolovat"
+msgstr "Check"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:358
+msgid "Ukončit"
+msgstr "Quit"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:373
+msgid "🔵 Inicializuji KDE StatusNotifierItem (SNI)"
+msgstr "🔵 Initializing KDE StatusNotifierItem (SNI)"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:379
+msgid "✅ SNI objekt vytvořen."
+msgstr "✅ SNI object created."
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:389
+msgid "✅ SNI registrováno u KDE Watchera."
+msgstr "✅ SNI registered with KDE Watcher."
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:414
+msgid ""
+"\n"
+"🧹 Ukončuji..."
+msgstr ""
+"\n"
+"🧹 Exiting..."
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:424
+msgid "📩 Signál SIGUSR1 ZAMÍTNUT (vypnuto v configu)."
+msgstr "📩 SIGUSR1 signal REJECTED (disabled in config)."
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:428
+msgid "📩 Signál SIGUSR1 přijat!"
+msgstr "📩 SIGUSR1 signal received!"
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:436
+msgid "🔄 Signál SIGHUP přijat: Znovunačítám konfiguraci..."
+msgstr "🔄 SIGHUP signal received: Reloading configuration..."
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:446
+msgid "⚠️ Agent už běží."
+msgstr "⚠️ Agent is already running."
+
+#: asus-screen-toggle/usr/bin/asus-user-agent.py:464
+msgid "✅ Asus Agent GUI spuštěn."
+msgstr "✅ Asus Agent GUI started."
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:40
+msgid "VID: %s, PID: %s"
+msgstr "VID: %s, PID: %s"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:41
+msgid "User mode: %s"
+msgstr "User mode: %s"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:42
+msgid "Sensor: %s"
+msgstr "Sensor: %s"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:50
+msgid "Fyzická klávesnice: PŘIPOJENA"
+msgstr "Physical Keyboard: CONNECTED"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:52
+msgid "Fyzická klávesnice: ODPOJENA"
+msgstr "Physical Keyboard: DISCONNECTED"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:65
+msgid "Vynuceno: Jen primární displej"
+msgstr "Forced: Primary Display Only"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:69
+msgid "Vynuceno: Desktop mód (oba displeje)"
+msgstr "Forced: Desktop Mode (Both Displays)"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:73
+msgid "Režim Auto: Ponechávám vypočtený stav."
+msgstr "Auto Mode: Keeping calculated state."
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:102
+#, fuzzy
+msgid "Aplikuji: Single Screen (X11)"
+msgstr "Applying: Single Screen (X11)"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:105
+#, fuzzy
+msgid "Aplikuji: Dual Screen (X11) - %s"
+msgstr "Applying: Dual Screen (X11) - %s"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:119
+msgid "Aplikuji: Single Screen (KDE)"
+msgstr "Applying: Single Screen (KDE)"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:123
+msgid "Aplikuji: Dual Screen (KDE) - %s"
+msgstr "Applying: Dual Screen (KDE) - %s"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:161
+msgid "Neplatná orientace: %s"
+msgstr "Invalid orientation: %s"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:170
+msgid "Umísťuji %s (%s) od %s na souřadnice %s,%s"
+msgstr "Placing %s (%s) from %s at coordinates %s,%s"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:182
+#, fuzzy
+msgid "Aplikuji: Single Screen (Wlr)"
+msgstr "Applying: Single Screen (Wlr)"
+
+#: asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh:186
+#, fuzzy
+msgid "Aplikuji: Dual Screen (Wlr) - %s"
+msgstr "Applying: Dual Screen (Wlr) - %s"
+
+#~ msgid "Domů"
+#~ msgstr "Home"
+
+#~ msgid "Rychlé ovládání"
+#~ msgstr "Quick Controls"
