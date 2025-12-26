@@ -8,9 +8,8 @@ Build-Depends: debhelper-compat (= 13),
                po-debconf,
                python3,
                dh-python
-Standards-Version: 4.6.2
+Standards-Version: 4.7.2
 Homepage: https://github.com/antoninmicka/asus-screen-toggle
-Rules-Requires-Root: no
 
 Package: asus-screen-toggle
 Architecture: all

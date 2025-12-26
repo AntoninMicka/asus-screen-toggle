@@ -1,8 +1,14 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the asus-screen-toggle package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: asus-screen-toggle\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-12-24 15:00+0100\n"
+"Report-Msgid-Bugs-To: asus-screen-toggle@packages.debian.org\n"
+"POT-Creation-Date: 2025-12-26 02:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -11,35 +17,77 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. Type: select
+#. choices
+#. Type: select
+#. choices
+#. Type: select
+#. choices
+#. Type: select
+#. choices
+#: ../templates:1001 ../templates:2001 ../templates:3001 ../templates:5001
+msgid "${Choices}"
+msgstr ""
+
+#. Type: select
+#. description
+#: ../templates:1002
 msgid "Primary display output:"
 msgstr ""
 
+#. Type: select
+#. description
+#: ../templates:1002
 msgid "Select the display output that will be used as the primary screen."
 msgstr ""
 
+#. Type: select
+#. description
+#: ../templates:2002
 msgid "Secondary display output:"
 msgstr ""
 
+#. Type: select
+#. description
+#: ../templates:2002
 msgid "Select the display output that will be used as the secondary screen."
 msgstr ""
 
+#. Type: select
+#. description
+#: ../templates:3002
 msgid "Lid device:"
 msgstr ""
 
+#. Type: select
+#. description
+#: ../templates:3002
 msgid "Select the ACPI lid device to monitor for lid open/close events."
 msgstr ""
 
-msgid "External keyboard connection required:"
+#. Type: note
+#. description
+#: ../templates:4001
+msgid "External keyboard connection required"
 msgstr ""
 
+#. Type: note
+#. description
+#: ../templates:4001
 msgid ""
 "Please connect or dock the external keyboard you want to use before "
-"proceeding."
+"proceeding"
 msgstr ""
 
+#. Type: select
+#. description
+#: ../templates:5002
 msgid "External keyboard for switching:"
 msgstr ""
 
+#. Type: select
+#. description
+#: ../templates:5002
 msgid ""
 "Choose the external USB keyboard that will be used to trigger display "
 "switching."
