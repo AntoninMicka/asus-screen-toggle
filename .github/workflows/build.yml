@@ -44,9 +44,9 @@ jobs:
       run: |
         mkdir -p public
         # Převod man stránek do HTML
-        groff -man -Thtml man/asus-user-agent.1 > public/asus-user-agent.html
-        groff -man -Thtml man/asus-screen-settings.1 > public/asus-screen-settings.html
-        groff -man -Thtml man/asus-screen-toggle-launcher.1 > public/asus-screen-toggle-launcher.html
+        groff -man -Thtml asus-screen-toggle/usr/share/man/man1/asus-user-agent.1 > public/asus-user-agent.html
+        groff -man -Thtml asus-screen-toggle/usr/share/man/man1/asus-screen-settings.1 > public/asus-screen-settings.html
+        groff -man -Thtml asus-screen-toggle/usr/share/man/man1/asus-screen-toggle-launcher.1 > public/asus-screen-toggle-launcher.html
         # Zkopírování tvého index.html (pokud ho máš v projektu, jinak ho vytvoříme)
         if [ -f index.html ]; then
           cp index.html public/
