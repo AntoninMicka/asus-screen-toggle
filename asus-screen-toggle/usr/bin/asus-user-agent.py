@@ -284,7 +284,7 @@ class AsusAgent:
         self.quit_callback()
 
     def _launch_settings(self):
-        try: subprocess.Popen(["/usr/bin/asus-screen-settings.py"])
+        try: subprocess.Popen(["/usr/bin/asus-screen-settings"])
         except: pass
         return False
 
