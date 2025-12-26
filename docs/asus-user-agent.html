@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.23.0 -->
-<!-- CreationDate: Fri Dec 26 01:39:00 2025 -->
+<!-- CreationDate: Fri Dec 26 11:00:16 2025 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -20,77 +20,66 @@
 
 <h1 align="center">ASUS-USER-AGENT</h1>
 
-<a href="#JM&Atilde;NO">JM&Atilde;NO</a><br>
-<a href="#SYNOPSE">SYNOPSE</a><br>
-<a href="#POPIS">POPIS</a><br>
-<a href="#VOLBY">VOLBY</a><br>
-<a href="#SIGN&Atilde;LY">SIGN&Atilde;LY</a><br>
-<a href="#SOUBORY">SOUBORY</a><br>
-<a href="#VIZ T&Atilde;&Aring;&frac12;">VIZ T&Atilde;&Aring;&frac12;</a><br>
+<a href="#NAME">NAME</a><br>
+<a href="#SYNOPSIS">SYNOPSIS</a><br>
+<a href="#DESCRIPTION">DESCRIPTION</a><br>
+<a href="#OPTIONS">OPTIONS</a><br>
+<a href="#SIGNALS">SIGNALS</a><br>
+<a href="#FILES">FILES</a><br>
+<a href="#SEE ALSO">SEE ALSO</a><br>
 
 <hr>
 
 
-<h2>JM&Atilde;NO
-<a name="JM&Atilde;NO"></a>
+<h2>NAME
+<a name="NAME"></a>
 </h2>
 
 
 <p style="margin-left:9%; margin-top: 1em">asus-user-agent
-- Agent pro spr&Atilde;&iexcl;vu spodn&Atilde;ho displeje
-notebook&Aring;&macr; Asus</p>
+- Management agent for Asus Zenbook Duo secondary
+display</p>
 
-<h2>SYNOPSE
-<a name="SYNOPSE"></a>
+<h2>SYNOPSIS
+<a name="SYNOPSIS"></a>
 </h2>
 
 
 
 <p style="margin-left:9%; margin-top: 1em"><b>asus-user-agent</b></p>
 
-<h2>POPIS
-<a name="POPIS"></a>
+<h2>DESCRIPTION
+<a name="DESCRIPTION"></a>
 </h2>
 
 
 
 <p style="margin-left:9%; margin-top: 1em"><b>asus-user-agent</b>
-je rezidentn&Atilde; program
-(b&Auml;&Aring;&frac34;&Atilde;c&Atilde; na pozad&Atilde;),
-kter&Atilde;&frac12; sleduje stav kl&Atilde;&iexcl;vesnice a
-senzor&Aring;&macr;. Zobrazuje ikonu v oznamovac&Atilde;
-oblasti (syst&Atilde;&copy;mov&Atilde;&iexcl;
-li&Aring;&iexcl;ta), kter&Atilde;&iexcl;
-umo&Aring;&frac34;&Aring;uje u&Aring;&frac34;ivateli
-p&Aring;ep&Atilde;nat mezi automatick&Atilde;&frac12;m
-re&Aring;&frac34;imem a vynucen&Atilde;&frac12;m
-zapnut&Atilde;m/vypnut&Atilde;m displeje.</p>
+is a background resident program that monitors keyboard
+connection status and hardware sensors. It displays an icon
+in the notification area (system tray), allowing the user to
+toggle between automatic mode and forced display on/off
+states.</p>
 
-<h2>VOLBY
-<a name="VOLBY"></a>
+<h2>OPTIONS
+<a name="OPTIONS"></a>
 </h2>
 
 
-<p style="margin-left:9%; margin-top: 1em">Program
-nep&Aring;ij&Atilde;m&Atilde;&iexcl;
-&Aring;&frac34;&Atilde;&iexcl;dn&Atilde;&copy; parametry
-p&Aring;&Atilde;kazov&Atilde;&copy;
-&Aring;&Atilde;&iexcl;dky. Konfigurace se
-prov&Atilde;&iexcl;d&Atilde; p&Aring;es GUI.</p>
+<p style="margin-left:9%; margin-top: 1em">The program does
+not accept any command-line arguments. Configuration is
+handled via the GUI utility.</p>
 
-<h2>SIGN&Atilde;LY
-<a name="SIGN&Atilde;LY"></a>
+<h2>SIGNALS
+<a name="SIGNALS"></a>
 </h2>
 
 
 
 <p style="margin-left:9%; margin-top: 1em"><b>SIGUSR1</b></p>
 
-<p style="margin-left:18%;">Vynut&Atilde;
-okam&Aring;&frac34;itou kontrolu stavu senzor&Aring;&macr;
-(pou&Aring;&frac34;&Atilde;v&Atilde;&iexcl;no
-syst&Atilde;&copy;movou
-&Auml;&Atilde;&iexcl;st&Atilde;).</p>
+<p style="margin-left:18%;">Forces an immediate sensor
+status check (used by system-level triggers).</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
@@ -101,28 +90,26 @@ syst&Atilde;&copy;movou
 
 <p><b>SIGHUP</b></p></td>
 <td width="1%"></td>
-<td width="42%">
+<td width="41%">
 
 
-<p>Znovu na&Auml;te konfigura&Auml;n&Atilde; soubory.</p></td>
-<td width="40%">
+<p>Reloads the configuration files.</p></td>
+<td width="41%">
 </td></tr>
 </table>
 
-<h2>SOUBORY
-<a name="SOUBORY"></a>
+<h2>FILES
+<a name="FILES"></a>
 </h2>
 
 
 
 <p style="margin-left:9%; margin-top: 1em"><i>&#732;/.config/asus-screen-toggle/user.conf</i></p>
 
+<p style="margin-left:18%;">User preference settings.</p>
 
-<p style="margin-left:18%;">U&Aring;&frac34;ivatelsk&Atilde;&copy;
-preference.</p>
-
-<h2>VIZ T&Atilde;&Aring;&frac12;
-<a name="VIZ T&Atilde;&Aring;&frac12;"></a>
+<h2>SEE ALSO
+<a name="SEE ALSO"></a>
 </h2>
 
 

@@ -59,7 +59,9 @@ install:
 	done
 
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
+	install -d $(DESTDIR)$(PREFIX)/share/man/man1/cs
 	install -m 644 asus-screen-toggle/usr/share/man/man1/*.1 $(DESTDIR)$(PREFIX)/share/man/man1/
+	install -m 644 asus-screen-toggle/usr/share/man/man1/cs/*.1 $(DESTDIR)$(PREFIX)/share/man/man1/cs/
 
 clean:
 	rm -rf build
