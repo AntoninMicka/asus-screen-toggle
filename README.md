@@ -1,3 +1,33 @@
+### Tray Icon
+<p align="center">
+  <img src="assets/statbar_icon.png" alt="Tray Icon" width="300">
+</p>
+
+### Menu Items
+<p align="center">
+  <img src="assets/menu_items.png" alt="Menu Items" width="300">
+</p>
+
+### Settings Application
+<p align="center">
+  <img src="assets/settings_main.png" alt="General Settings" width="600">
+  <br>
+  <em>Quick controls and status</em>
+</p>
+
+<p align="center">
+  <img src="assets/settings_services.png" alt="Service Settings" width="600">
+  <br>
+  <em>Quick controls and service status</em>
+</p>
+
+<p align="center">
+  <img src="assets/settings_hw.png" alt="Hardware Settings" width="600">
+  <br>
+  <em>Hardware configuration (Vendor ID, Display names)</em>
+</p>
+
+
 # Asus Screen Toggle
  
 A lightweight utility for **Asus Zenbook Duo (2024+)** and similar dual-screen laptops running Linux (Debian/KDE/Wayland/X11).à

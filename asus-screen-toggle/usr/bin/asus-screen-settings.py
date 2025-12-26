@@ -5,6 +5,7 @@ import subprocess
 import gi
 import gettext
 import locale
+import shutil
 
 # Nastavení lokalizace
 APP_NAME = "asus-screen-toggle"
