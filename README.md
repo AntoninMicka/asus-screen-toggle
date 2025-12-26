@@ -76,3 +76,8 @@ Requirements
 License
 
 GPL-3.0 License. See LICENSE for details.
+
+## Compatibility with asusctl
+This utility is designed to work alongside [asusctl](https://gitlab.com/asus-linux/asusctl). 
+While `asusctl` manages power profiles and keyboard backlights, `asus-screen-toggle` 
+focuses exclusively on display layout management. They do not conflict with each other.
