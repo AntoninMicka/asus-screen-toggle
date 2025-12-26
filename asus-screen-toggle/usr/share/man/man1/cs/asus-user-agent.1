@@ -1,0 +1,26 @@
+.TH ASUS-USER-AGENT 1 "Prosinec 2025" "1.0.1" "Uživatelské příkazy"
+.SH JMÉNO
+asus-user-agent \- Agent pro správu spodního displeje notebooků Asus
+.SH SYNOPSE
+.B asus-user-agent
+.SH POPIS
+.B asus-user-agent
+je rezidentní program (běžící na pozadí), který sleduje stav klávesnice a senzorů.
+Zobrazuje ikonu v oznamovací oblasti (systémová lišta), která umožňuje uživateli
+přepínat mezi automatickým režimem a vynuceným zapnutím/vypnutím displeje.
+.SH VOLBY
+Program nepřijímá žádné parametry příkazové řádky. Konfigurace se provádí přes GUI.
+.SH SIGNÁLY
+.TP
+.B SIGUSR1
+Vynutí okamžitou kontrolu stavu senzorů (používáno systémovou částí).
+.TP
+.B SIGHUP
+Znovu načte konfigurační soubory.
+.SH SOUBORY
+.I ~/.config/asus-screen-toggle/user.conf
+.RS
+Uživatelské preference.
+.RE
+.SH VIZ TÉŽ
+.BR asus-screen-settings (1)

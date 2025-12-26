@@ -1,26 +1,25 @@
-.TH ASUS-USER-AGENT 1 "Prosinec 2025" "1.0.1" "Uživatelské příkazy"
-.SH JMÉNO
-asus-user-agent \- Agent pro správu spodního displeje notebooků Asus
-.SH SYNOPSE
+.TH ASUS-USER-AGENT 1 "December 2025" "1.0.1" "User Commands"
+.SH NAME
+asus-user-agent \- Management agent for Asus Zenbook Duo secondary display
+.SH SYNOPSIS
 .B asus-user-agent
-.SH POPIS
+.SH DESCRIPTION
 .B asus-user-agent
-je rezidentní program (běžící na pozadí), který sleduje stav klávesnice a senzorů.
-Zobrazuje ikonu v oznamovací oblasti (systémová lišta), která umožňuje uživateli
-přepínat mezi automatickým režimem a vynuceným zapnutím/vypnutím displeje.
-.SH VOLBY
-Program nepřijímá žádné parametry příkazové řádky. Konfigurace se provádí přes GUI.
-.SH SIGNÁLY
+is a background resident program that monitors keyboard connection status and hardware sensors.
+It displays an icon in the notification area (system tray), allowing the user to toggle between automatic mode and forced display on/off states.
+.SH OPTIONS
+The program does not accept any command-line arguments. Configuration is handled via the GUI utility.
+.SH SIGNALS
 .TP
 .B SIGUSR1
-Vynutí okamžitou kontrolu stavu senzorů (používáno systémovou částí).
+Forces an immediate sensor status check (used by system-level triggers).
 .TP
 .B SIGHUP
-Znovu načte konfigurační soubory.
-.SH SOUBORY
+Reloads the configuration files.
+.SH FILES
 .I ~/.config/asus-screen-toggle/user.conf
 .RS
-Uživatelské preference.
+User preference settings.
 .RE
-.SH VIZ TÉŽ
+.SH SEE ALSO
 .BR asus-screen-settings (1)

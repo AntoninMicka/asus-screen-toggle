@@ -1,21 +1,18 @@
-.TH ASUS-SCREEN-TOGGLE-LAUNCHER 1 "Prosinec 2025" "1.0.1" "Uživatelské příkazy"
-.SH JMÉNO
-asus-screen-toggle-launcher \- Spouštěč agenta pro správu Asus obrazovek
-.SH SYNOPSE
+.TH ASUS-SCREEN-TOGGLE-LAUNCHER 1 "December 2025" "1.0.1" "User Commands"
+.SH NAME
+asus-screen-toggle-launcher \- Launcher for the Asus screen management agent
+.SH SYNOPSIS
 .B asus-screen-toggle-launcher
-.SH POPIS
+.SH DESCRIPTION
 .B asus-screen-toggle-launcher
-je obalový skript (wrapper), který bezpečně spouští uživatelského agenta.
-Před vlastním spuštěním kontroluje, zda již jiná instance agenta neběží,
-a zajišťuje správné nastavení prostředí pro komunikaci s D-Bus a grafickým serverem.
+is a wrapper script that safely executes the user agent.
+It checks if another instance is already running and ensures the environment is correctly set up for D-Bus communication and the display server.
 .PP
-Tento skript je standardně volán automaticky po přihlášení uživatele (přes .desktop soubor
-v autostartu), ale může být spuštěn i ručně pro restartování služby po havárii
-nebo změně konfigurace.
-.SH FUNKCE
-1. Kontrola běžící instance (prevence duplicity).
-2. Inicializace stavových souborů v ~/.local/state.
-3. Spuštění asus-user-agent.
-.SH VIZ TÉŽ
+This script is typically invoked automatically upon user login (via a .desktop file in autostart), but can also be run manually to restart the service after a crash or configuration change.
+.SH FEATURES
+1. Instance check (prevents duplicates).
+2. Initialization of state files in ~/.local/state.
+3. Execution of asus-user-agent.
+.SH SEE ALSO
 .BR asus-user-agent (1),
 .BR asus-screen-settings (1)
