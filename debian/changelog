@@ -1,3 +1,15 @@
+asus-screen-toggle (1.1.1-1) unstable; urgency=medium
+
+  * quick fix 
+
+ -- Antonín Mička <antonin.micka@gmail.com>  Fri, 09 Jan 2026 19:25:58 +0100
+
+asus-screen-toggle (1.1.0-1) unstable; urgency=medium
+
+  * [NEW] pure systemd flow 
+
+ -- Antonín Mička <antonin.micka@gmail.com>  Fri, 09 Jan 2026 18:54:43 +0100
+
 asus-screen-toggle (1.0.0-1) unstable; urgency=medium
 
   * Initial release (Closes: #1124010)
