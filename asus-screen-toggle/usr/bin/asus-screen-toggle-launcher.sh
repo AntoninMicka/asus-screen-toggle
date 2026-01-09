@@ -11,6 +11,19 @@ if [[ $EUID -eq 0 ]]; then
     exit 1
 fi
 
+USER_NAME="${SUDO_USER:-$USER}"
+
+if ! loginctl show-user "$USER_NAME" -p Linger --value 2>/dev/null | grep -qx yes; then
+    echo "Enabling linger for user: $USER_NAME"
+
+    if [ "$(id -u)" -ne 0 ]; then
+        echo "ERROR: loginctl enable-linger requires root privileges"
+        exit 1
+    fi
+
+    loginctl enable-linger "$USER_NAME"
+fi
+
 systemctl --user daemon-reload
 
 # 2️⃣ Povolení služby (jen pokud není)

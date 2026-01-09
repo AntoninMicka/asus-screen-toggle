@@ -5,9 +5,9 @@ delay=15
 attempt=0
 
 ENABLE_DIRECT_CALL="false"
-ENABLE_DBUS="true"
+ENABLE_DBUS="false"
 ENABLE_SIGNAL="false"
-
+ENABLE_SYSTEMD_CALL="true"
 
 USER_BIN=$(command -v asus-check-keyboard-user || echo "/usr/bin/asus-check-keyboard-user")
 
@@ -46,6 +46,15 @@ fi
             runtime_path=$(loginctl show-session "$sid" -p RuntimePath --value)
             if [[ -z "$runtime_path" ]]; then
                 runtime_path="/run/user/$USER_UID"
+            fi
+
+            if [[ "$ENABLE_SYSTEMD_CALL" == "true" ]]; then
+                if systemctl --user --machine="$USER_UID@.host" reload asus-screen-toggle.service > /dev/null 2>&1; \
+                || systemctl --user --machine="$USER_UID@.host" restart asus-screen-toggle.service > /dev/null 2>&1; then
+
+                    echo "✅ Systemd: Zpráva úspěšně odeslána agentovi."
+                    exit 0
+                fi
             fi
 
             # Adresa sběrnice je klíčová pro D-Bus volání

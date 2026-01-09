@@ -44,6 +44,7 @@ APP_TITLE = _("Nastavení Asus Screen Toggle")
 BUS_NAME = "org.asus.ScreenToggle" # D-Bus jméno agenta
 USER_SERVICE = "asus-screen-toggle.service"
 SYSTEM_SERVICE = "asus-bottom-screen-init.service"
+SYSTRAY_SERVICE = "asus-user-agent.service"
 
 # Cesty ke konfiguracím
 SYSTEM_CONFIG_FILE = "/etc/asus-screen-toggle.conf"
@@ -136,6 +137,14 @@ class AsusSettingsApp(Gtk.Window):
         vbox_services.pack_start(self.create_service_row(_("Uživatelská služba (Agent)"), self.status_user, self.btn_user_toggle, self.switch_user_enable), False, False, 0)
 
         vbox_services.pack_start(Gtk.Separator(), False, False, 5)
+        self.status_systray = Gtk.Label(label="...")
+        self.btn_systray_toggle = Gtk.Button(label="...")
+        self.btn_systray_toggle.connect("clicked", self.on_systray_service_toggle)
+        self.switch_systray_enable = Gtk.Switch()
+        self.switch_systray_enable.connect("notify::active", self.on_systray_enable_toggle)
+        vbox_services.pack_start(self.create_service_row(_("Indikátor stauu (Systray)"), self.status_systray, self.btn_systray_toggle, self.switch_systray_enable), False, False, 0)
+
+        vbox_services.pack_start(Gtk.Separator(), False, False, 5)
 
         # System Service
         self.status_system = Gtk.Label(label="...")
@@ -171,13 +180,14 @@ class AsusSettingsApp(Gtk.Window):
         self.page_hw.pack_start(lbl_hw_info, False, False, 0)
 
         # Checkbox pro systémové chování
+        self.sys_chk_systemd = Gtk.CheckButton(label=_("Povolit Systemd ovládání (ENABLE_SYSTEMD_CALL)"))
         self.sys_chk_dbus = Gtk.CheckButton(label=_("Povolit D-Bus ovládání (ENABLE_DBUS)"))
         self.sys_chk_signal = Gtk.CheckButton(label=_("Povolit reakci na signály/rotaci (ENABLE_SIGNAL)"))
         self.sys_chk_direct = Gtk.CheckButton(label=_("Povolit přímé volání z Udev (ENABLE_DIRECT_CALL)"))
         self.page_hw.pack_start(self.sys_chk_dbus, False, False, 0)
         self.page_hw.pack_start(self.sys_chk_signal, False, False, 0)
         self.page_hw.pack_start(self.sys_chk_direct, False, False, 0)
-
+        self.page_hw.pack_start(self.sys_chk_systemd, False, False, 0)
         self.page_hw.pack_start(Gtk.Separator(), False, False, 5)
 
         grid_hw = Gtk.Grid()
@@ -393,7 +403,7 @@ class AsusSettingsApp(Gtk.Window):
             "PRIMARY_DISPLAY_NAME": "eDP-1", "SECONDARY_DISPLAY_NAME": "eDP-2",
             "LID": "LID",
             "ENABLE_DIRECT_CALL": True,
-            "ENABLE_DBUS": True, "ENABLE_SIGNAL": True
+            "ENABLE_DBUS": True, "ENABLE_SIGNAL": True, "ENABLE_SYSTEMD_CALL": True
         }
 
         if os.path.exists(SYSTEM_CONFIG_FILE):
@@ -409,10 +419,12 @@ class AsusSettingsApp(Gtk.Window):
         # Systémové checkboxy
         sys_dbus_active = sys_data.get("ENABLE_DBUS") is True
         sys_signal_active = sys_data.get("ENABLE_SIGNAL") is True
+        sys_systemd_active = sys_data.get("ENABLE_SYSTEMD_CALL") is True
 
         self.sys_chk_direct.set_active(sys_data.get("ENABLE_DIRECT_CALL") is True)
         self.sys_chk_dbus.set_active(sys_dbus_active)
         self.sys_chk_signal.set_active(sys_signal_active)
+        self.sys_chk_systemd.set_active(sys_systemd_active)
 
         # 2. Načíst UŽIVATELSKÉ nastavení
         user_data = {}
@@ -481,6 +493,7 @@ class AsusSettingsApp(Gtk.Window):
             f'ENABLE_DIRECT_CALL={"true" if self.sys_chk_direct.get_active() else "false"}',
             f'ENABLE_DBUS={"true" if self.sys_chk_dbus.get_active() else "false"}',
             f'ENABLE_SIGNAL={"true" if self.sys_chk_signal.get_active() else "false"}',
+            f'ENABLE_SYSTEMD_CALL={"true" if self.sys_chk_systemd.get_active() else "false"}',
         ]
 
         file_content = "\n".join(sys_content)
@@ -543,9 +556,19 @@ class AsusSettingsApp(Gtk.Window):
         subprocess.run(["systemctl", "--user", action, USER_SERVICE])
         self.refresh_services_only()
 
+    def on_systray_service_toggle(self, btn):
+        action = "stop" if btn.get_label() == _("Zastavit") else "start"
+        subprocess.run(["systemctl", "--user", action, SYSTRAY_SERVICE])
+        self.refresh_services_only()
+
     def on_user_enable_toggle(self, switch, gparam):
         action = "enable" if switch.get_active() else "disable"
         subprocess.run(["systemctl", "--user", action, USER_SERVICE])
+        self.refresh_services_only()
+
+    def on_systray_enable_toggle(self, switch, gparam):
+        action = "enable" if switch.get_active() else "disable"
+        subprocess.run(["systemctl", "--user", action, SYSTRAY_SERVICE])
         self.refresh_services_only()
 
     def on_system_service_toggle(self, btn):
