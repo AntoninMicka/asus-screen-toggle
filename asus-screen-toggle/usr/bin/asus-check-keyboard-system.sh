@@ -49,8 +49,9 @@ fi
             fi
 
             if [[ "$ENABLE_SYSTEMD_CALL" == "true" ]]; then
-                if systemctl --user --machine="$USER_UID@.host" reload asus-screen-toggle.service > /dev/null 2>&1; \
-                || systemctl --user --machine="$USER_UID@.host" restart asus-screen-toggle.service > /dev/null 2>&1; then
+                if systemctl --user --machine="$USER_UID@.host" start asus-screen-toggle.service > /dev/null 2>&1; then
+                #if systemctl --user --machine="$USER_UID@.host" reload asus-screen-toggle.service > /dev/null 2>&1; \
+                #|| systemctl --user --machine="$USER_UID@.host" restart asus-screen-toggle.service > /dev/null 2>&1; then
 
                     echo "✅ Systemd: Zpráva úspěšně odeslána agentovi."
                     exit 0

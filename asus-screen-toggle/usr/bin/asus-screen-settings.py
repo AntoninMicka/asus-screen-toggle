@@ -372,6 +372,9 @@ class AsusSettingsApp(Gtk.Window):
         active, enabled = self.get_service_status(USER_SERVICE, user=True)
         self.update_service_ui(self.status_user, self.btn_user_toggle, self.switch_user_enable, active, enabled)
 
+        active, enabled = self.get_service_status(SYSTRAY_SERVICE, user=True)
+        self.update_service_ui(self.status_systray, self.btn_systray_toggle, self.switch_systray_enable, active, enabled)
+
         active, enabled = self.get_service_status(SYSTEM_SERVICE, user=False)
         self.update_service_ui(self.status_system, self.btn_system_toggle, self.switch_system_enable, active, enabled)
         return True
@@ -385,9 +388,9 @@ class AsusSettingsApp(Gtk.Window):
         return (res_act.stdout.strip() == _("active"), res_en.stdout.strip() == _("enabled"))
 
     def update_service_ui(self, label, button, switch, active, enabled):
-        switch.handler_block_by_func(self.on_user_enable_toggle if switch == self.switch_user_enable else self.on_system_enable_toggle)
+        switch.handler_block_by_func(self.on_user_enable_toggle if switch == self.switch_user_enable else self.on_system_enable_toggle if switch == self.switch_system_enable else self.on_systray_enable_toggle)
         switch.set_active(enabled)
-        switch.handler_unblock_by_func(self.on_user_enable_toggle if switch == self.switch_user_enable else self.on_system_enable_toggle)
+        switch.handler_unblock_by_func(self.on_user_enable_toggle if switch == self.switch_user_enable else self.on_system_enable_toggle if switch == self.switch_system_enable else self.on_systray_enable_toggle)
 
         if active:
             label.set_markup(_("<span foreground='green'><b>Běží</b></span>"))
