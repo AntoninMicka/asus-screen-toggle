@@ -1,22 +1,24 @@
 [Unit]
-Description=Asus Screen Toggle - Worker (Bash)
+Description=Asus Screen Toggle - Systray Agent (Python)
 # Zajistí, že se služba spustí až ve chvíli, kdy běží grafika
 After=graphical-session.target
 PartOf=graphical-session.target
 Documentation=man:asus-user-agent(1)
 
 [Service]
-Type=oneshot
+Type=simple
 # KLÍČOVÁ OPRAVA: Načte proměnné sezení (WAYLAND_DISPLAY, XDG_RUNTIME_DIR atd.)
 # Tyto proměnné tam KDE/Systemd pošle při startu sezení
 ImportEnvironment=DISPLAY XAUTHORITY WAYLAND_DISPLAY XDG_RUNTIME_DIR
 
 # Doporučuji přidat parametr -u pro Python, aby logy v journalu neběhaly se zpožděním
-ExecStart=/usr/bin/asus-check-keyboard-user
+ExecStart=/usr/bin/python3 -u /usr/bin/asus-user-agent
+
 KillSignal=SIGTERM
 TimeoutStopSec=5
+Restart=on-failure
 RestartSec=1
-ExecReload=/usr/bin/asus-check-keyboard-user
+ExecReload=/bin/kill -HUP $MAINPID
 
 # Prostředí GUI
 Environment=GTK_USE_PORTAL=1

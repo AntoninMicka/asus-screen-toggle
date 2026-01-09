@@ -1,32 +1,36 @@
 #!/bin/bash
 set -e
 
-SERVICE_NAME="asus-screen-toggle.service"
+# Seznam služeb: worker (oneshot) a agent (systray)
+SERVICES=("asus-screen-toggle.service" "asus-user-agent.service")
 
 echo "▶️ Asus Screen Toggle – launcher"
 
-# Musí běžet jako normální uživatel
+# Kontrola, aby neběželo pod rootem (uživatelské služby spravuje uživatel)
 if [[ $EUID -eq 0 ]]; then
     echo "❌ Tento launcher nesmí běžet jako root."
     exit 1
 fi
 
+# 1️⃣ Obnovení konfigurace systemd (načte změny v .service souborech)
 systemctl --user daemon-reload
 
-# 2️⃣ Povolení služby (jen pokud není)
-if ! systemctl --user is-enabled --quiet "$SERVICE_NAME"; then
-    echo "🔔 Povoluji user service"
-    systemctl --user enable "$SERVICE_NAME"
-else
-    echo "✅ User service je povolena"
-fi
+# 2️⃣ Aktivace a spuštění obou komponent
+for SERVICE in "${SERVICES[@]}"; do
+    echo "--- Správa jednotky: $SERVICE ---"
 
-# 3️⃣ Zajištění běhu služby
-if ! systemctl --user is-active --quiet "$SERVICE_NAME"; then
-    echo "▶️ Spouštím user service"
-    systemctl --user start "$SERVICE_NAME"
-else
-    echo "▶️ User service již běží"
-fi
+    # Povolení služby (aby se spouštěla automaticky při startu graphical-session)
+    if ! systemctl --user is-enabled --quiet "$SERVICE"; then
+        echo "🔔 Povoluji $SERVICE"
+        systemctl --user enable "$SERVICE"
+    else
+        echo "✅ $SERVICE je povolena"
+    fi
 
-echo "🎉 Hotovo"
+    # Spuštění služby
+    # U oneshotu (worker) to provede nastavení, u simple (agent) to spustí tray ikonu
+    echo "▶️ Spouštím/Restartuji $SERVICE"
+    systemctl --user restart "$SERVICE"
+done
+
+echo "🎉 Hotovo – nastavení aplikováno a agent běží."
