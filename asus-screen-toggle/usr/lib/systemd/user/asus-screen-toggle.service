@@ -1,12 +1,12 @@
 [Unit]
-Description=Asus Screen Toggle User Agent
+Description=Asus Screen Toggle - Worker (Bash)
 # Zajistí, že se služba spustí až ve chvíli, kdy běží grafika
 After=graphical-session.target
 PartOf=graphical-session.target
 Documentation=man:asus-user-agent(1)
 
 [Service]
-Type=single
+Type=oneshot
 # KLÍČOVÁ OPRAVA: Načte proměnné sezení (WAYLAND_DISPLAY, XDG_RUNTIME_DIR atd.)
 # Tyto proměnné tam KDE/Systemd pošle při startu sezení
 ImportEnvironment=DISPLAY XAUTHORITY WAYLAND_DISPLAY XDG_RUNTIME_DIR
@@ -15,7 +15,6 @@ ImportEnvironment=DISPLAY XAUTHORITY WAYLAND_DISPLAY XDG_RUNTIME_DIR
 ExecStart=/usr/bin/asus-check-keyboard-user
 KillSignal=SIGTERM
 TimeoutStopSec=5
-Restart=on-failure
 RestartSec=1
 ExecReload=/usr/bin/asus-check-keyboard-user
 

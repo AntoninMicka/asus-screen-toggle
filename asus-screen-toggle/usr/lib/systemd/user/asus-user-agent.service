@@ -1,5 +1,5 @@
 [Unit]
-Description=Asus Screen Toggle User Agent
+Description=Asus Screen Toggle - Systray Agent (Python)
 # Zajistí, že se služba spustí až ve chvíli, kdy běží grafika
 After=graphical-session.target
 PartOf=graphical-session.target

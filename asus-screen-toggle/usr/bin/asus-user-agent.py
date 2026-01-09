@@ -47,7 +47,7 @@ try:
     from gi.repository import GLib, Gtk
     from pydbus import SessionBus
 except Exception as e:
-    print(f_("CHYBA při importu knihoven: {e}"))
+    print(_(f"CHYBA při importu knihoven: {e}"))
     sys.exit(1)
 
 # --- Konfigurace ---
