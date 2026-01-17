@@ -104,4 +104,7 @@ endif
 	@grep -q "debounce_drm" usr/bin/asus-check-keyboard-system.sh || \
 		(echo "ERROR: DRM debounce missing"; exit 1)
 
+	@grep -q "get_active_user" usr/bin/asus-check-keyboard-system.sh || \
+		(echo "ERROR: user selection logic missing"; exit 1)
+
 	@echo "Sanity checks passed."

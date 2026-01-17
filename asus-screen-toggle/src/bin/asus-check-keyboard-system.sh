@@ -41,6 +41,35 @@ die() {
 }
 
 # -------------------------
+# Active graphical user
+# -------------------------
+get_active_user() {
+    local session
+
+    while read -r session _; do
+        local active type seat user uid
+
+        active=$(loginctl show-session "$session" -p Active --value)
+        [ "$active" = "yes" ] || continue
+
+        type=$(loginctl show-session "$session" -p Type --value)
+        [[ "$type" =~ ^(x11|wayland)$ ]] || continue
+
+        seat=$(loginctl show-session "$session" -p Seat --value)
+        [ "$seat" = "seat0" ] || continue
+
+        user=$(loginctl show-session "$session" -p User --value)
+        uid=$(loginctl show-session "$session" -p UID --value)
+
+        echo "$user:$uid"
+        return 0
+    done < <(loginctl list-sessions --no-legend)
+
+    return 1
+}
+
+
+# -------------------------
 # Environment sanity
 # -------------------------
 mkdir -p "$RUNTIME_DIR" || die "Cannot create runtime dir"
@@ -59,6 +88,19 @@ case "$REASON" in
 esac
 
 log "Triggered with reason: $REASON"
+
+TARGET=""
+TARGET_UID=""
+
+if user_info=$(get_active_user); then
+    TARGET="${user_info%%:*}"
+    TARGET_UID="${user_info##*:}"
+    log "Active user: $TARGET (uid $TARGET_UID)"
+else
+    log "No active graphical user, nothing to do"
+    exit 0
+fi
+
 
 # -------------------------
 # Debounce for DRM only

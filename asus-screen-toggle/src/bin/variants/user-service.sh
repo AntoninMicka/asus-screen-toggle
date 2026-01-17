@@ -1,5 +1,6 @@
 # Dispatch to user systemd service
 
-log "Dispatching to user service"
+log "Dispatching to user service for $TARGET"
 
-systemctl --user start asus-screen-toggle-user.service
+runuser -u "#$TARGET_UID" -- \
+    systemctl --user start asus-screen-toggle-user.service
