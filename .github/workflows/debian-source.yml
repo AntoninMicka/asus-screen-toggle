@@ -20,7 +20,7 @@ jobs:
             quilt \
             lintian
 
-        - name: Install build dependencies from debian/control
+      - name: Install build dependencies from debian/control
         run: |
             sudo mk-build-deps \
             --install \
