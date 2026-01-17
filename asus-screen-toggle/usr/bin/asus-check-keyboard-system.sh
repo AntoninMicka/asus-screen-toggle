@@ -1,5 +1,23 @@
 #!/bin/bash
 
+LOCKFILE="/run/asus-bottom-screen-init.lock"
+exec 9>"$LOCKFILE" || exit 0
+flock -n 9 || exit 0
+
+REASON="${1:-UNKNOWN}"
+
+case "$REASON" in
+  USB_ADD|USB_REMOVE)
+    # tady klidně BEZ delaye
+    ;;
+  DRM_CHANGE)
+    # DRM debounce
+    sleep 0.5
+    ;;
+  *)
+    ;;
+esac
+
 max_tries=1
 delay=15
 attempt=0

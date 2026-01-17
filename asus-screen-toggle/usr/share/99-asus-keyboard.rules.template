@@ -1,4 +1,5 @@
-ACTION=="add", SUBSYSTEM=="usb", ENV{ID_VENDOR_ID}=="${VENDOR_ID}", ENV{ID_MODEL_ID}=="${PRODUCT_ID}", RUN+="/bin/systemctl reload asus-bottom-screen-init.service"
+ACTION=="add", SUBSYSTEM=="usb", ENV{ID_VENDOR_ID}=="${VENDOR_ID}", ENV{ID_MODEL_ID}=="${PRODUCT_ID}", RUN+="/bin/systemctl reload asus-bottom-screen-init.service USB_ADD"
 #ACTION=="remove", SUBSYSTEM=="usb", ENV{ID_VENDOR_ID}=="${VENDOR_ID}", ENV{ID_MODEL_ID}=="${PRODUCT_ID}", RUN+="/bin/systemctl reload asus-bottom-screen-init.service"
-ACTION=="remove", SUBSYSTEM=="usb", ATTRS{idVendor}=="${VENDOR_ID}", ATTRS{idProduct}=="${PRODUCT_ID}", RUN+="/bin/systemctl reload asus-bottom-screen-init.service"
-
+ACTION=="remove", SUBSYSTEM=="usb", ATTRS{idVendor}=="${VENDOR_ID}", ATTRS{idProduct}=="${PRODUCT_ID}", RUN+="/bin/systemctl reload asus-bottom-screen-init.service USB_REMOVE"
+# Monitor / GPU hotplug (USB-C / HDMI / DP / USB4)
+ACTION=="change", SUBSYSTEM=="drm", RUN+="/bin/systemctl start asus-bottom-screen-init.service  DRM_CHANGE"
