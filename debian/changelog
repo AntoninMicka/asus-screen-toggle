@@ -1,4 +1,10 @@
-asus-screen-toggle (1.2.1) UNRELEASED; urgency=medium
+asus-screen-toggle (1.2.2) unstable; urgency=medium
+
+  * dev utils
+
+ -- Antonín Mička <antonin.micka@gmail.com>  Sat, 17 Jan 2026 19:55:10 +0100
+
+asus-screen-toggle (1.2.1) unstable; urgency=medium
 
   * Refactor system dispatcher build-time composition
   * Fix CI Debian source build
