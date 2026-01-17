@@ -44,7 +44,9 @@ jobs:
 
 
       - name: Build Debian source
-        run: dpkg-buildpackage -S -us -uc
+        run: |
+          cd ..
+          dpkg-buildpackage -S -us -uc
 
       - name: Verify source extraction
         run: dpkg-source -x ../asus-screen-toggle_${VERSION}-1.dsc
