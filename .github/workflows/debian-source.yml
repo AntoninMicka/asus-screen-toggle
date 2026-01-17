@@ -12,17 +12,19 @@ jobs:
     steps:
       - name: Install bootstrap Debian tooling
         run: |
-            sudo apt-get update
-            sudo apt-get install -y \
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
             devscripts \
             equivs \
             debhelper \
+            dh-python \
             quilt \
             lintian
 
       - name: Install build dependencies from debian/control
         run: |
-            sudo mk-build-deps \
+          sudo mk-build-deps \
             --install \
             --remove \
             --tool 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y' \
@@ -34,14 +36,14 @@ jobs:
 
       - name: Create orig tarball from tag
         run: |
-            VERSION=${GITHUB_REF_NAME#v}
-            cd ..
-            git -C asus-screen-toggle archive \
+          VERSION=${GITHUB_REF_NAME#v}
+          cd ..
+          git -C asus-screen-toggle archive \
             --format=tar.gz \
             --prefix=asus-screen-toggle-${VERSION}/ \
             v${VERSION} \
             > asus-screen-toggle_${VERSION}.orig.tar.gz
-            ls -l asus-screen-toggle_${VERSION}.orig.tar.gz
+          ls -l asus-screen-toggle_${VERSION}.orig.tar.gz
 
       - name: Build Debian source
         run: |
@@ -49,7 +51,11 @@ jobs:
           dpkg-buildpackage -S -us -uc
 
       - name: Verify source extraction
-        run: dpkg-source -x ../asus-screen-toggle_${VERSION}-1.dsc
+        run: |
+          cd ..
+          dpkg-source -x asus-screen-toggle_${VERSION}-1.dsc
 
       - name: Lintian (informational)
-        run: lintian ../asus-screen-toggle_${VERSION}-1_source.changes || true
+        run: |
+          cd ..
+          lintian asus-screen-toggle_${VERSION}-1_source.changes || true
