@@ -1,0 +1,41 @@
+name: Debian source gate
+
+on:
+  push:
+    branches:
+      - 'release/**'
+      - 'hotfix/**'
+
+jobs:
+  debian-source:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Debian tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            devscripts \
+            debhelper \
+            quilt \
+            lintian
+
+      - name: Ensure clean quilt state
+        run: |
+          rm -rf .pc || true
+
+      - name: Build Debian source package
+        run: |
+          dpkg-buildpackage -S -us -uc
+
+      - name: Verify source extraction
+        run: |
+          dsc=$(ls ../*.dsc)
+          dpkg-source -x "$dsc"
+
+      - name: Lintian (informational)
+        run: |
+          lintian ../*_source.changes || true
