@@ -17,6 +17,10 @@
  - každý commit odpovídá jednomu vydání
  - vždy označený tagem
 
+- Release a hotfix větve mají tvar release/X.Y nebo hotfix/X.Y.
+- Název větve neurčuje konkrétní verzi balíku.
+- Konkrétní upstream verze je určena výhradně git tagem.
+ 
 ## Pravidla pro vydání
 - vydání probíhá výhradně merge do main
 - do main se:
@@ -26,6 +30,10 @@
  - prošel CI
  - je stabilní
  - je vhodný k vydání
+
+- Release a hotfix větve mají tvar release/X.Y nebo hotfix/X.Y.
+- CI odmítne jakoukoli větev s jiným názvem.
+- Při vydání se kontroluje, že upstream verze odpovídá větvi (X.Y.Z ∈ X.Y.x).
 
 ## Tagování
 - každý release commit v main:
