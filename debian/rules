@@ -1,13 +1,9 @@
 #!/usr/bin/make -f
 
-export DH_VERBOSE=1
-
-# Build-time volby
-INSTALL_USER_SERVICE ?= yes
-
 %:
 	dh $@
 
 override_dh_auto_build:
-	$(MAKE) clean
-	$(MAKE) INSTALL_USER_SERVICE=$(INSTALL_USER_SERVICE)
+	make clean
+	make CHANNELS="systemd"
+	make check
