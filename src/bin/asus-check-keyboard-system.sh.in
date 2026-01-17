@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -euo pipefail
+
+LOCKFILE="/run/asus-bottom-screen-init.lock"
+exec 9>"$LOCKFILE" || exit 0
+flock -n 9 || exit 0
+
+REASON="${1:-UNKNOWN}"
+
+# -------------------------
+# Debounce
+# -------------------------
+case "$REASON" in
+  USB_ADD|USB_REMOVE)
+    ;;
+  DRM_CHANGE)
+    sleep 0.5
+    ;;
+  *)
+    ;;
+esac
+
+# -------------------------
+# Config
+# -------------------------
+if [[ -f /etc/asus-screen-toggle.conf ]]; then
+    source /etc/asus-screen-toggle.conf
+else
+    exit 0
+fi
+
+# -------------------------
+# Helpers
+# -------------------------
+. /usr/lib/asus-screen-toggle/dispatcher/helpers.sh
+
+# -------------------------
+# Main loop
+# -------------------------
+sessions=$(loginctl list-sessions --no-legend | awk '{print $1}')
+
+for sid in $sessions; do
+    prepare_user_context "$sid" || continue
+
+@CHANNEL_SYSTEMD@
+@CHANNEL_DBUS@
+@CHANNEL_SIGNAL@
+@CHANNEL_DIRECT@
+
+done
+
+exit 0

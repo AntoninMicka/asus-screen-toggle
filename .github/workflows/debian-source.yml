@@ -1,0 +1,61 @@
+name: Debian source sanity check
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  source:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install bootstrap Debian tooling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            devscripts \
+            equivs \
+            debhelper \
+            dh-python \
+            quilt \
+            lintian
+
+      - name: Install build dependencies from debian/control
+        run: |
+          sudo mk-build-deps \
+            --install \
+            --remove \
+            --tool 'apt-get -o Debug::pkgProblemResolver=yes --no-install-recommends -y' \
+            debian/control
+
+      - name: Extract version
+        run: |
+          echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+
+      - name: Create orig tarball from tag
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          cd ..
+          git -C asus-screen-toggle archive \
+            --format=tar.gz \
+            --prefix=asus-screen-toggle-${VERSION}/ \
+            v${VERSION} \
+            > asus-screen-toggle_${VERSION}.orig.tar.gz
+          ls -l asus-screen-toggle_${VERSION}.orig.tar.gz
+
+      - name: Build Debian source
+        run: |
+          cd ..
+          dpkg-buildpackage -S -us -uc
+
+      - name: Verify source extraction
+        run: |
+          cd ..
+          dpkg-source -x asus-screen-toggle_${VERSION}-1.dsc
+
+      - name: Lintian (informational)
+        run: |
+          cd ..
+          lintian asus-screen-toggle_${VERSION}-1_source.changes || true

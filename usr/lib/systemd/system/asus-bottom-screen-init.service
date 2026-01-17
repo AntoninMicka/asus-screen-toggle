@@ -9,7 +9,7 @@ Type=simple
 ExecStart=/usr/bin/asus-check-rotation
 Restart=on-failure
 RestartSec=3
-ExecReload=/usr/bin/asus-check-keyboard-system
+ExecReload=/usr/bin/asus-check-keyboard-system %I
 
 [Install]
 WantedBy=default.target

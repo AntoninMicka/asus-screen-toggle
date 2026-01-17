@@ -1,67 +1,104 @@
-# Makefile pro asus-screen-toggle
+# =========================
+# asus-screen-toggle Makefile
+# =========================
 
-PREFIX ?= /usr
-SYSCONFDIR ?= /etc
-SYSTEMDUSERUNITDIR ?= $(PREFIX)/lib/systemd/user
-SYSTEMDSYSTEMUNITDIR ?= $(PREFIX)/lib/systemd/system
-UDEVRULESDIR ?= $(PREFIX)/lib/udev/rules.d
+# -------------------------
+# Paths
+# -------------------------
+SRC_DIR := src
+USR_DIR := usr
 
-# Složky
-SRC_DIR = asus-screen-toggle
-PO_DIR = po
-LOCALE_DIR = $(PREFIX)/share/locale
+SRC_BIN := $(SRC_DIR)/bin
+SRC_CHANNELS := $(SRC_BIN)/channels
+SRC_USER_SYSTEMD := $(SRC_DIR)/lib/systemd/user
 
-all: compile-locales
+USR_BIN := $(USR_DIR)/bin
+USR_SYSTEMD_SYSTEM := $(USR_DIR)/lib/systemd/system
+USR_SYSTEMD_USER := $(USR_DIR)/lib/systemd/user
 
-compile-locales:
-	# Kompilace .po souborů do .mo
-	for po in $(PO_DIR)/*.po; do \
-		lang=$$(basename $$po .po); \
-		mkdir -p build/locale/$$lang/LC_MESSAGES; \
-		msgfmt $$po -o build/locale/$$lang/LC_MESSAGES/asus-screen-toggle.mo; \
+# -------------------------
+# Build config
+# -------------------------
+-include build.conf
+
+CHANNELS ?= systemd dbus signal direct
+INSTALL_USER_SERVICE ?= yes
+
+# -------------------------
+# Default target
+# -------------------------
+.PHONY: all
+all: prepare system-dispatcher user-services
+
+# -------------------------
+# Prepare directories
+# -------------------------
+.PHONY: prepare
+prepare:
+	mkdir -p $(USR_BIN)
+	mkdir -p $(USR_SYSTEMD_SYSTEM)
+	mkdir -p $(USR_SYSTEMD_USER)
+
+# -------------------------
+# System dispatcher (build-time)
+# -------------------------
+.PHONY: system-dispatcher
+system-dispatcher:
+	@echo "Building system dispatcher"
+	cp $(SRC_BIN)/asus-check-keyboard-system.sh.in \
+	   $(USR_BIN)/asus-check-keyboard-system.sh
+	for ch in $(CHANNELS); do \
+	  sed -i "/@CHANNEL_$$(echo $$ch | tr a-z A-Z)@/r $(SRC_CHANNELS)/$$ch.sh" \
+	      $(USR_BIN)/asus-check-keyboard-system.sh; \
+	  sed -i "/@CHANNEL_$$(echo $$ch | tr a-z A-Z)@/d" \
+	      $(USR_BIN)/asus-check-keyboard-system.sh; \
 	done
+	sed -i '/@CHANNEL_[A-Z_]\+@/d' \
+	    $(USR_BIN)/asus-check-keyboard-system.sh
+	chmod 0755 $(USR_BIN)/asus-check-keyboard-system.sh
 
-install:
-	# 1. Instalace binárek (Python + Bash)
-	install -d $(DESTDIR)$(PREFIX)/bin
-	install -m 755 asus-screen-toggle/usr/bin/asus-user-agent.py $(DESTDIR)$(PREFIX)/bin/asus-user-agent
-	install -m 755 asus-screen-toggle/usr/bin/asus-screen-settings.py $(DESTDIR)$(PREFIX)/bin/asus-screen-settings
-	install -m 755 asus-screen-toggle/usr/bin/asus-check-keyboard-user.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-user
-	install -m 755 asus-screen-toggle/usr/bin/asus-check-keyboard-system.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-system
-	install -m 755 asus-screen-toggle/usr/bin/asus-check-keyboard-genrules.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-genrules
-	install -m 755 asus-screen-toggle/usr/bin/asus-screen-toggle-launcher.sh $(DESTDIR)$(PREFIX)/bin/asus-screen-toggle-launcher
-	install -m 755 asus-screen-toggle/usr/bin/asus-check-rotation.sh $(DESTDIR)$(PREFIX)/bin/asus-check-rotation
+# -------------------------
+# User services (optional)
+# -------------------------
+.PHONY: user-services
+user-services:
+ifeq ($(INSTALL_USER_SERVICE),yes)
+	@echo "Installing user services"
+	cp $(SRC_USER_SYSTEMD)/*.service $(USR_SYSTEMD_USER)/
+else
+	@echo "User services disabled"
+	rm -f $(USR_SYSTEMD_USER)/*.service
+endif
 
-	# 2. Instalace sdílených dat (Ikony, Template)
-	install -d $(DESTDIR)$(PREFIX)/share/asus-screen-toggle
-	install -m 644 asus-screen-toggle/usr/share/99-asus-keyboard.rules.template $(DESTDIR)$(PREFIX)/share/asus-screen-toggle/
-	install -m 644 $(SRC_DIR)/usr/share/asus-screen-toggle/*.svg $(DESTDIR)$(PREFIX)/share/asus-screen-toggle/
+# -------------------------
+# Sanity checks
+# -------------------------
+.PHONY: check
+check:
+	@echo "Running sanity checks..."
 
-	# 3. Instalace Desktop souborů
-	install -d $(DESTDIR)$(PREFIX)/share/applications
-	install -m 644 $(SRC_DIR)/usr/share/applications/*.desktop $(DESTDIR)$(PREFIX)/share/applications/
+	@test -d usr || (echo "ERROR: usr/ missing"; exit 1)
+	@test -x usr/bin/asus-check-keyboard-system.sh || \
+		(echo "ERROR: dispatcher missing"; exit 1)
 
-	# 4. Instalace Systemd služeb
-	install -d $(DESTDIR)$(SYSTEMDUSERUNITDIR)
-	install -m 644 $(SRC_DIR)/usr/lib/systemd/user/*.service $(DESTDIR)$(SYSTEMDUSERUNITDIR)/
+	@grep -q "DRM_CHANGE" usr/bin/asus-check-keyboard-system.sh || \
+		(echo "ERROR: DRM debounce missing"; exit 1)
 
-	install -d $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)
-	install -m 644 $(SRC_DIR)/usr/lib/systemd/system/*.service $(DESTDIR)$(SYSTEMDSYSTEMUNITDIR)/
+ifeq ($(INSTALL_USER_SERVICE),yes)
+	@test -f usr/lib/systemd/user/asus-screen-toggle.service || \
+		(echo "ERROR: user service missing"; exit 1)
+endif
 
-	install -d $(DESTDIR)$(PREFIX)/lib/systemd/system-sleep
-	install -m 755 $(SRC_DIR)/usr/lib/systemd/system-sleep/* $(DESTDIR)$(PREFIX)/lib/systemd/system-sleep/
+	@find usr -type f \( -name '*.in' -o -name 'build.conf' \) | \
+		grep -q . && \
+		(echo "ERROR: build-time files leaked"; exit 1) || true
 
-	# 5. Instalace lokalizací (zkompilovaných)
-	for lang in $$(ls build/locale); do \
-		install -d $(DESTDIR)$(LOCALE_DIR)/$$lang/LC_MESSAGES; \
-		install -m 644 build/locale/$$lang/LC_MESSAGES/asus-screen-toggle.mo \
-			$(DESTDIR)$(LOCALE_DIR)/$$lang/LC_MESSAGES/; \
-	done
+	@echo "Sanity checks passed."
 
-	install -d $(DESTDIR)$(PREFIX)/share/man/man1
-	install -d $(DESTDIR)$(PREFIX)/share/man/man1/cs
-	install -m 644 asus-screen-toggle/usr/share/man/man1/*.1 $(DESTDIR)$(PREFIX)/share/man/man1/
-	install -m 644 asus-screen-toggle/usr/share/man/man1/cs/*.1 $(DESTDIR)$(PREFIX)/share/man/man1/cs/
-
+# -------------------------
+# Clean
+# -------------------------
+.PHONY: clean
 clean:
-	rm -rf build
+	rm -f $(USR_BIN)/asus-check-keyboard-system.sh
+	rm -f $(USR_SYSTEMD_USER)/*.service

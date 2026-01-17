@@ -1,7 +1,11 @@
 #!/usr/bin/make -f
 
 %:
-	dh $@ --with python3
+	dh $@
 
-override_dh_clean:
-	dh_clean -X.git
+override_dh_auto_build:
+	make CHANNELS="systemd"
+	make check
+
+override_dh_auto_clean:
+	make clean

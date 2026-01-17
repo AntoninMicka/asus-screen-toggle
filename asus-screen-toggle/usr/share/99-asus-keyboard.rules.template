@@ -1,4 +1,0 @@
-ACTION=="add", SUBSYSTEM=="usb", ENV{ID_VENDOR_ID}=="${VENDOR_ID}", ENV{ID_MODEL_ID}=="${PRODUCT_ID}", RUN+="/bin/systemctl reload asus-bottom-screen-init.service"
-#ACTION=="remove", SUBSYSTEM=="usb", ENV{ID_VENDOR_ID}=="${VENDOR_ID}", ENV{ID_MODEL_ID}=="${PRODUCT_ID}", RUN+="/bin/systemctl reload asus-bottom-screen-init.service"
-ACTION=="remove", SUBSYSTEM=="usb", ATTRS{idVendor}=="${VENDOR_ID}", ATTRS{idProduct}=="${PRODUCT_ID}", RUN+="/bin/systemctl reload asus-bottom-screen-init.service"
-
