@@ -34,14 +34,14 @@ jobs:
 
       - name: Create orig tarball from tag
         run: |
-          VERSION=${GITHUB_REF_NAME#v}
-          cd ..
-          git -C asus-screen-toggle archive \
+            VERSION=${GITHUB_REF_NAME#v}
+            cd ..
+            git -C asus-screen-toggle archive \
             --format=tar.gz \
             --prefix=asus-screen-toggle-${VERSION}/ \
             v${VERSION} \
             > asus-screen-toggle_${VERSION}.orig.tar.gz
-
+            ls -l asus-screen-toggle_${VERSION}.orig.tar.gz
 
       - name: Build Debian source
         run: |
