@@ -53,6 +53,8 @@ system-dispatcher:
 	  sed -i "/@CHANNEL_$$(echo $$ch | tr a-z A-Z)@/d" \
 	      $(USR_BIN)/asus-check-keyboard-system.sh; \
 	done
+	sed -i '/@CHANNEL_[A-Z_]\+@/d' \
+	    $(USR_BIN)/asus-check-keyboard-system.sh
 	chmod 0755 $(USR_BIN)/asus-check-keyboard-system.sh
 
 # -------------------------

@@ -43,10 +43,10 @@ sessions=$(loginctl list-sessions --no-legend | awk '{print $1}')
 for sid in $sessions; do
     prepare_user_context "$sid" || continue
 
-    @CHANNEL_SYSTEMD@
-    @CHANNEL_DBUS@
-    @CHANNEL_SIGNAL@
-    @CHANNEL_DIRECT@
+@CHANNEL_SYSTEMD@
+@CHANNEL_DBUS@
+@CHANNEL_SIGNAL@
+@CHANNEL_DIRECT@
 
 done
 

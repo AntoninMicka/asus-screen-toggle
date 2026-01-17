@@ -21,7 +21,6 @@
 
 # Pokud stavíte o úroveň výš, Git je neuvidí,
 # ale pokud byste je měl v kořeni:
-*.deb
 *.changes
 *.buildinfo
 *.dsc
@@ -34,4 +33,7 @@ debian/*.debhelper.log
 debian/asus-screen-toggle.substvars
 debian/files
 debian/debhelper-build-stamp
-/debian/asus-screen-toggle/
+/debian/asus-screen-toggle//build/
+/usr/bin/asus-check-keyboard-system.sh
+/usr/lib/systemd/user/asus-screen-toggle.service
+/usr/lib/systemd/user/asus-user-agent.service
