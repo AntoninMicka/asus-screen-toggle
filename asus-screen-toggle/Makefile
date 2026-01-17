@@ -53,6 +53,17 @@ $(SYSTEM_DISPATCHER_DST): $(SYSTEM_DISPATCHER_SRC)
 	cp $< $@
 	chmod 0755 $@
 
+DISPATCH_TEMPLATE=src/bin/asus-check-keyboard-system.sh.in
+OUT=usr/bin/asus-check-keyboard-system.sh
+
+cp $(DISPATCH_TEMPLATE) $(OUT)
+
+for ch in $(CHANNELS); do \
+  sed -i "/@CHANNEL_$(shell echo $$ch | tr a-z A-Z)@/r src/dispatcher/channels/$$ch.sh" $(OUT); \
+  sed -i "/@CHANNEL_$(shell echo $$ch | tr a-z A-Z)@/d" $(OUT); \
+done
+
+
 # -------------------------
 # User services (optional)
 # -------------------------
