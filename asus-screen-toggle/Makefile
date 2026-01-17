@@ -101,4 +101,7 @@ endif
 		grep -q . && \
 		(echo "ERROR: build-time sources leaked into usr/"; exit 1) || true
 
+	@grep -q "debounce_drm" usr/bin/asus-check-keyboard-system.sh || \
+		(echo "ERROR: DRM debounce missing"; exit 1)
+
 	@echo "Sanity checks passed."
