@@ -1,5 +1,31 @@
-usr/bin/*                          usr/bin/
-usr/lib/systemd/system/*           usr/lib/systemd/system/
-usr/lib/systemd/user/*             usr/lib/systemd/user/
-usr/share/*                        usr/share/
-src/bin/helpers.sh    usr/lib/asus-screen-toggle/dispatcher/
+# ---- main executables ----
+usr/bin/asus-check-keyboard-user.sh            usr/bin/
+usr/bin/asus-check-keyboard-genrules.sh        usr/bin/
+usr/bin/asus-check-rotation.sh                 usr/bin/
+usr/bin/asus-screen-toggle-launcher.sh         usr/bin/
+usr/bin/asus-user-agent.py                     usr/bin/
+usr/bin/asus-screen-settings.py                usr/bin/
+
+# ---- GENERATED dispatcher (build output) ----
+usr/bin/asus-check-keyboard-system.sh          usr/bin/
+
+# ---- dispatcher runtime helpers ----
+usr/lib/asus-screen-toggle/dispatcher/helpers.sh    usr/lib/asus-screen-toggle/dispatcher/
+
+# ---- systemd ----
+usr/lib/systemd/system/asus-bottom-screen-init.service     usr/lib/systemd/system/
+usr/lib/systemd/user/*.service                             usr/lib/systemd/user/
+usr/lib/systemd/system-sleep/*                             usr/lib/systemd/system-sleep/
+
+# ---- udev ----
+usr/share/99-asus-keyboard.rules.template        usr/share/
+
+# ---- desktop ----
+usr/share/applications/*.desktop                 usr/share/applications/
+
+# ---- icons ----
+usr/share/asus-screen-toggle/*.svg               usr/share/asus-screen-toggle/
+
+# ---- man pages ----
+usr/share/man/man1/*.1                           usr/share/man/man1/
+usr/share/man/man1/cs/*.1                        usr/share/man/man1/cs/

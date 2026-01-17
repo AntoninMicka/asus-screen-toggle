@@ -4,6 +4,8 @@
 	dh $@
 
 override_dh_auto_build:
-	make clean
 	make CHANNELS="systemd"
 	make check
+
+override_dh_auto_clean:
+	make clean
