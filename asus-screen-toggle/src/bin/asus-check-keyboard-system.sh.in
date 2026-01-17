@@ -48,7 +48,6 @@ for sid in $sessions; do
     @CHANNEL_SIGNAL@
     @CHANNEL_DIRECT@
 
-    exit 0
 done
 
 exit 0

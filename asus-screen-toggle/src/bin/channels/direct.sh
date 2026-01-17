@@ -28,6 +28,4 @@ if [[ "${ENABLE_DIRECT_CALL:-false}" == "true" ]]; then
                 DBUS_SESSION_BUS_ADDRESS="$dbus_address" \
             "$USER_BIN"
     fi
-
-    exit 0
 fi

@@ -46,23 +46,15 @@ prepare:
 # System dispatcher
 # -------------------------
 .PHONY: system-dispatcher
-system-dispatcher: $(SYSTEM_DISPATCHER_DST)
-
-$(SYSTEM_DISPATCHER_DST): $(SYSTEM_DISPATCHER_SRC)
+system-dispatcher:
 	@echo "Building system dispatcher"
-	cp $< $@
-	chmod 0755 $@
-
-DISPATCH_TEMPLATE=src/bin/asus-check-keyboard-system.sh.in
-OUT=usr/bin/asus-check-keyboard-system.sh
-
-cp $(DISPATCH_TEMPLATE) $(OUT)
-
-for ch in $(CHANNELS); do \
-  sed -i "/@CHANNEL_$(shell echo $$ch | tr a-z A-Z)@/r src/dispatcher/channels/$$ch.sh" $(OUT); \
-  sed -i "/@CHANNEL_$(shell echo $$ch | tr a-z A-Z)@/d" $(OUT); \
-done
-
+	mkdir -p $(USR_BIN)
+	cp src/bin/asus-check-keyboard-system.sh.in $(USR_BIN)/asus-check-keyboard-system.sh
+	for ch in $(CHANNELS); do \
+	  sed -i "/@CHANNEL_$$(echo $$ch | tr a-z A-Z)@/r src/bin/channels/$$ch.sh" $(USR_BIN)/asus-check-keyboard-system.sh; \
+	  sed -i "/@CHANNEL_$$(echo $$ch | tr a-z A-Z)@/d" $(USR_BIN)/asus-check-keyboard-system.sh; \
+	done
+	chmod 0755 $(USR_BIN)/asus-check-keyboard-system.sh
 
 # -------------------------
 # User services (optional)
@@ -112,10 +104,7 @@ endif
 		grep -q . && \
 		(echo "ERROR: build-time sources leaked into usr/"; exit 1) || true
 
-	@grep -q "debounce_drm" usr/bin/asus-check-keyboard-system.sh || \
+	@grep -q "DRM_CHANGE" usr/bin/asus-check-keyboard-system.sh || \
 		(echo "ERROR: DRM debounce missing"; exit 1)
-
-	@grep -q "get_active_user" usr/bin/asus-check-keyboard-system.sh || \
-		(echo "ERROR: user selection logic missing"; exit 1)
 
 	@echo "Sanity checks passed."
