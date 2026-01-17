@@ -1,7 +1,13 @@
 #!/usr/bin/make -f
 
-%:
-	dh $@ --with python3
+export DH_VERBOSE=1
 
-override_dh_clean:
-	dh_clean -X.git
+# Build-time volby
+INSTALL_USER_SERVICE ?= yes
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	$(MAKE) clean
+	$(MAKE) INSTALL_USER_SERVICE=$(INSTALL_USER_SERVICE)

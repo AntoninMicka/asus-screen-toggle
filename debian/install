@@ -1,1 +1,4 @@
-
+usr/bin/*                          usr/bin/
+usr/lib/systemd/system/*           usr/lib/systemd/system/
+usr/lib/systemd/user/*             usr/lib/systemd/user/
+usr/share/*                        usr/share/
