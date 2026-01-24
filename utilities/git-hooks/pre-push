@@ -1,0 +1,16 @@
+#!/bin/bash
+
+current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [[ $current_branch == release/* ]] || [[ $current_branch == hotfix/* ]]; then
+    version_part=${current_branch#*/}
+
+    # Regex pro Major.Minor.Patch-Revision-package (např. 1.1.1-1-package)
+    if [[ ! $version_part =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+ ]]; then
+        echo "CHYBA: Název větve '$current_branch' je neplatný."
+        echo "Formát musí být: release/X.Y.Z-R-package (např. release/1.1.1-1-package)"
+        exit 1
+    fi
+fi
+
+exit 0

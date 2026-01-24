@@ -1,2 +1,3 @@
 --extend-diff-ignore = "(^|/)\.git($|/)"
 --extend-diff-ignore=(^|/)\.github($|/)
+extend-diff-ignore = "^(\.qtc_clangd/|asus-screen-toggle\.(creator|files|includes|config|cflags|cxxflags|user))"

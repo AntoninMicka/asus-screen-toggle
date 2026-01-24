@@ -1,28 +1,35 @@
+asus-screen-toggle (1.2.2-2) unstable; urgency=medium
+
+  * Release 1.2.2-2
+  * utilities
+  * fix deb build
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 25 Jan 2026 00:47:06 +0100
+
 asus-screen-toggle (1.2.2-1) unstable; urgency=medium
 
   * dev utils
 
- -- Antonín Mička <antonin.micka@gmail.com>  Sat, 17 Jan 2026 19:55:10 +0100
+ -- Antonin Micka <antonin.micka@gmail.com>  Sat, 17 Jan 2026 19:55:10 +0100
 
-asus-screen-toggle (1.2.1) unstable; urgency=medium
+asus-screen-toggle (1.2.1-1) unstable; urgency=medium
 
   * Refactor system dispatcher build-time composition
   * Fix CI Debian source build
   * No functional changes
 
- -- Antonín Mička <antonin.micka@gmail.com>  Sat, 17 Jan 2026 18:54:02 +0100
+ -- Antonin Micka <antonin.micka@gmail.com>  Sat, 17 Jan 2026 18:54:02 +0100
 
 asus-screen-toggle (1.1.1-1) unstable; urgency=medium
 
-  * quick fix 
+  * quick fix
 
- -- Antonín Mička <antonin.micka@gmail.com>  Fri, 09 Jan 2026 19:25:58 +0100
+ -- Antonin Micka <antonin.micka@gmail.com>  Fri, 09 Jan 2026 19:25:58 +0100
 
 asus-screen-toggle (1.1.0-1) unstable; urgency=medium
 
-  * [NEW] pure systemd flow 
+  * [NEW] pure systemd flow
 
- -- Antonín Mička <antonin.micka@gmail.com>  Fri, 09 Jan 2026 18:54:43 +0100
+ -- Antonin Micka <antonin.micka@gmail.com>  Fri, 09 Jan 2026 18:54:43 +0100
 
 asus-screen-toggle (1.0.0-1) unstable; urgency=medium
 
@@ -47,7 +54,7 @@ asus-screen-toggle (0.1.0-1) unstable; urgency=low
   * [ Antonin ]
   * add user agent
 
- -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 01 Jun 2025 10:15:00 +0200
 
 asus-screen-toggle (0.0.6-1) unstable; urgency=low
 
@@ -57,35 +64,35 @@ asus-screen-toggle (0.0.6-1) unstable; urgency=low
   * devrules fix
   * add dependencies
 
- -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 01 Jun 2025 10:15:00 +0200
 
 asus-screen-toggle (0.0.5-1) unstable; urgency=low
 
   * [ Antonin ]
   * some issue
 
- -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 01 Jun 2025 10:15:00 +0200
 
 asus-screen-toggle (0.0.4-1) unstable; urgency=low
 
   * [ Antonin ]
   * some issue
 
- -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 01 Jun 2025 10:15:00 +0200
 
 asus-screen-toggle (0.0.3-1) unstable; urgency=low
 
   * [ Antonin ]
   * some issue
 
- -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:15:00 +0200
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 01 Jun 2025 10:15:00 +0200
 
 asus-screen-toggle (0.0.2-1) unstable; urgency=low
 
   * [ Antonin ]
   * some issue
 
- -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 10:00:00 +0200
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 01 Jun 2025 10:00:00 +0200
 
 asus-screen-toggle (0.0.1-1) unstable; urgency=low
 
@@ -93,4 +100,4 @@ asus-screen-toggle (0.0.1-1) unstable; urgency=low
   * first version, package template
   * fixed device in script
 
- -- Antonin <antonin.micka@debian.org>  Sun, 01 Jun 2025 08:00:00 +0200
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 01 Jun 2025 08:00:00 +0200

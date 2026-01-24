@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Detekce merge zprávy
+merged_branch=$(grep "Merge branch" .git/MERGE_MSG | sed "s/.*'\(.*\)'.*/\1/" || echo "")
+
+if [[ $merged_branch == release/* ]] || [[ $merged_branch == hotfix/* ]]; then
+    echo "Uzavření větve $merged_branch detekováno. Spouštím publish..."
+
+    if [ -x "./utilities/publish.sh" ]; then
+        ./utilities/publish.sh
+    else
+        echo "Chyba: utilities/publish.sh není spustitelný nebo neexistuje."
+    fi
+fi

@@ -1,87 +1,24 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
+set -e
 
-# ------------------------------------------------------------
-# 0. Ochrany
-# ------------------------------------------------------------
-[[ -n "${CI:-}" ]] && {
-  echo "ERROR: Refusing to run in CI"
-  exit 1
-}
+echo "--- Zahajuji proces nahrávání na servery ---"
 
-# ------------------------------------------------------------
-# 1. Jsme v git repu a na main
-# ------------------------------------------------------------
-git rev-parse --is-inside-work-tree >/dev/null
+# 1. Čištění a příprava
+make clean
+rm -f ../asus-screen-toggle_*.orig.tar.gz
 
-BRANCH=$(git symbolic-ref --short HEAD)
-if [[ "$BRANCH" != "main" ]]; then
-  echo "ERROR: Not on main branch (current: $BRANCH)"
-  exit 1
-fi
+# 2. Build balíčku (použije váš dříve vytvořený build proces)
+# Předpokládáme, že build skript vygeneruje podepsaný .changes soubor
+./utilities/debian_build.sh
 
-# ------------------------------------------------------------
-# 2. Čistý strom
-# ------------------------------------------------------------
-if ! git diff --quiet || ! git diff --cached --quiet; then
-  echo "ERROR: Working tree is dirty"
-  exit 1
-fi
+# 3. Identifikace .changes souboru
+CHANGES_FILE=$(ls -t ../asus-screen-toggle_*_source.changes | head -n 1)
 
-# ------------------------------------------------------------
-# 3. Verze z changelogu
-# ------------------------------------------------------------
-DEB_VERSION=$(dpkg-parsechangelog -S Version)
-UPSTREAM_VERSION=${DEB_VERSION%-*}
-PKG_NAME=$(dpkg-parsechangelog -S Source)
+# 4. Nahrání na Debian Mentors (vyžaduje dput balíček a nastavení v ~/.dput.cf)
+echo "Nahrávám $CHANGES_FILE na mentors.debian.net..."
+dput mentors "$CHANGES_FILE"
 
-TAR="../${PKG_NAME}_${UPSTREAM_VERSION}.orig.tar.gz"
+# 5. Volitelně: Nahrání na váš vlastní server přes SCP/RSYNC
+# rsync -avP ../*.deb user@vasserver:/var/www/repo/binary/
 
-echo "Package  : $PKG_NAME"
-echo "Version  : $DEB_VERSION"
-echo "Upstream : $UPSTREAM_VERSION"
-echo "Tarball  : $TAR"
-
-# ------------------------------------------------------------
-# 4. Potvrzení
-# ------------------------------------------------------------
-echo
-read -rp "Build & upload this version? [y/N] " ans
-[[ "$ans" == "y" ]] || exit 1
-
-# ------------------------------------------------------------
-# 5. Vytvoř upstream tarball
-# ------------------------------------------------------------
-if [[ -f "$TAR" ]]; then
-  echo "Upstream tarball already exists: $TAR"
-else
-  echo "Creating upstream tarball"
-  git archive \
-    --format=tar.gz \
-    --prefix=${PKG_NAME}-${UPSTREAM_VERSION}/ \
-    HEAD \
-    > "$TAR"
-fi
-
-# ------------------------------------------------------------
-# 6. Build Debian source balíčku
-# ------------------------------------------------------------
-echo "Building Debian source package"
-rm -rf .pc || true
-dpkg-buildpackage -S -sa
-
-# ------------------------------------------------------------
-# 7. Upload na mentors
-# ------------------------------------------------------------
-CHANGES="../${PKG_NAME}_${DEB_VERSION}_source.changes"
-
-if [[ ! -f "$CHANGES" ]]; then
-  echo "ERROR: Changes file not found: $CHANGES"
-  exit 1
-fi
-
-echo "Uploading $CHANGES to mentors"
-dput mentors "$CHANGES"
-
-echo
-echo "Upload finished successfully"
+echo "--- Publish dokončen ---"
