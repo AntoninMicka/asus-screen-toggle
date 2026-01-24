@@ -1,6 +1,5 @@
 Source: asus-screen-toggle
 Section: utils
-Priority: optional
 Maintainer: Antonin Micka <antonin.micka@gmail.com>
 Build-Depends: debhelper-compat (= 13),
                gettext,
@@ -8,7 +7,7 @@ Build-Depends: debhelper-compat (= 13),
                po-debconf,
                python3-all,
                dh-python
-Standards-Version: 4.7.0
+Standards-Version: 4.7.3
 Homepage: https://github.com/antoninmicka/asus-screen-toggle
 Vcs-Browser: https://github.com/antoninmicka/asus-screen-toggle
 Vcs-Git: https://github.com/antoninmicka/asus-screen-toggle.git
