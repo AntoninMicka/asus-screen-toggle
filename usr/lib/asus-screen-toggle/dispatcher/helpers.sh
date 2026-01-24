@@ -1,3 +1,5 @@
+#!/bin/bash
+
 prepare_user_context() {
     local sid="$1"
 

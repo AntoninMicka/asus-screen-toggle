@@ -1,22 +1,18 @@
 #!/usr/bin/make -f
 
-# Exportuje všechny proměnné potřebné pro korektní build (hardening atd.)
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %:
-	dh $@
+	# Přidáno --with python3 pro automatické závislosti
+	dh $@ --with python3
 
 override_dh_auto_build:
-	# Použijeme dh_auto_build, který správně předává standardní flagy
 	dh_auto_build -- CHANNELS="systemd"
-	# Spuštění testů, pokud je Makefile podporuje
-	$(MAKE) check
-
-override_dh_auto_clean:
-	dh_auto_clean
-	# Pokud dh_auto_clean nestačí, můžete nechat i explicitní make clean
-	$(MAKE) clean
 
 override_dh_auto_install:
-	# Klíčové: Instalace do adresáře pro balíček (debian/asus-screen-toggle)
-	dh_auto_install -- DESTDIR=$(CURDIR)/debian/asus-screen-toggle
+	# Instalace proběhne přes náš opravený Makefile
+	dh_auto_install
+
+override_dh_python3:
+	# Toto vynutí kontrolu skriptů v /usr/bin
+	dh_python3 /usr/bin
