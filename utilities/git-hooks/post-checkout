@@ -1,0 +1,30 @@
+#!/bin/bash
+
+if [ "$3" -eq 1 ]; then
+    current_branch=$(git rev-parse --abbrev-ref HEAD)
+
+    if [[ $current_branch == release/* ]] || [[ $current_branch == hotfix/* ]]; then
+        full_suffix=${current_branch#*/}
+        # Odstraní "-package" -> zbude např. 1.1.1-1
+        debian_version=${full_suffix%-package}
+
+        echo "Příprava changelogu pro verzi $debian_version..."
+
+        # Získání commitů od posledního tagu
+        last_tag=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        if [ -n "$last_tag" ]; then
+            commits=$(git log "$last_tag..HEAD" --oneline --format="  * %s")
+        else
+            commits="  * New release $debian_version"
+        fi
+
+        # Aktualizace changelogu
+        # dch automaticky rozdělí 1.1.1-1 na upstream 1.1.1 a debian revizi 1
+        EDITOR=true dch --v "$debian_version" --force-bad-version -D unstable "Release $debian_version"
+        echo "$commits" >> debian/changelog
+
+        # Vyčištění bílých znaků
+        sed -i -e 's/[[:space:]]*$//g' debian/changelog
+        echo "Changelog připraven."
+    fi
+fi

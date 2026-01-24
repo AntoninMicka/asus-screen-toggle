@@ -4,7 +4,7 @@ asus-screen-toggle (1.2.2-1) unstable; urgency=medium
 
  -- Antonin Micka <antonin.micka@gmail.com>  Sat, 17 Jan 2026 19:55:10 +0100
 
-asus-screen-toggle (1.2.1) unstable; urgency=medium
+asus-screen-toggle (1.2.1-1) unstable; urgency=medium
 
   * Refactor system dispatcher build-time composition
   * Fix CI Debian source build
@@ -14,13 +14,13 @@ asus-screen-toggle (1.2.1) unstable; urgency=medium
 
 asus-screen-toggle (1.1.1-1) unstable; urgency=medium
 
-  * quick fix 
+  * quick fix
 
  -- Antonin Micka <antonin.micka@gmail.com>  Fri, 09 Jan 2026 19:25:58 +0100
 
 asus-screen-toggle (1.1.0-1) unstable; urgency=medium
 
-  * [NEW] pure systemd flow 
+  * [NEW] pure systemd flow
 
  -- Antonin Micka <antonin.micka@gmail.com>  Fri, 09 Jan 2026 18:54:43 +0100
 

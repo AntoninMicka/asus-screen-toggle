@@ -130,3 +130,15 @@ check:
 .PHONY: clean
 clean:
 	rm -rf $(BUILD_DIR)
+
+# -------------------------
+# Dev git hooks
+# -------------------------
+.PHONY: dev-setup
+dev-setup:
+	@echo "Aktivuji Git hooky..."
+	ln -sf ../../utilities/git-hooks/pre-push .git/hooks/pre-push
+	ln -sf ../../utilities/git-hooks/post-checkout .git/hooks/post-checkout
+	ln -sf ../../utilities/git-hooks/post-merge .git/hooks/post-merge
+	chmod +x utilities/git-hooks/*
+	@echo "Hooky jsou aktivní."
