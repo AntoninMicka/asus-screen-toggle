@@ -1,17 +1,16 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: asus-screen-toggle
-Upstream-Contact: Antonin Micka <antonin.micka@gmail.com>
 Source: https://github.com/antoninmicka/asus-screen-toggle
 
 Files: *
-Copyright: 2024-2025 Antonin Micka <antonin.micka@gmail.com>
-License: GPL-3.0+
+Copyright: 2024-2026 Antonin Micka <antonin.micka@gmail.com>
+License: GPL-3.0-or-later
 
 Files: debian/*
-Copyright: 2024-2025 Antonin Micka <antonin.micka@gmail.com>
-License: GPL-3.0+
+Copyright: 2024-2026 Antonin Micka <antonin.micka@gmail.com>
+License: GPL-3.0-or-later
 
-License: GPL-3.0+
+License: GPL-3.0-or-later
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation, either version 3 of the License, or
@@ -25,5 +24,5 @@ License: GPL-3.0+
  You should have received a copy of the GNU General Public License
  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  .
- On Debian systems, the complete text of the GNU General Public
- License version 3 can be found in "/usr/share/common-licenses/GPL-3".
+ On Debian systems, the full text of the GNU General Public License
+ version 3 can be found in the file `/usr/share/common-licenses/GPL-3'.
