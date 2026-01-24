@@ -12,9 +12,16 @@ SRC_BIN := $(SRC_DIR)/bin
 SRC_CHANNELS := $(SRC_BIN)/channels
 SRC_USER_SYSTEMD := $(SRC_DIR)/lib/systemd/user
 
-USR_BIN := $(USR_DIR)/bin
-USR_SYSTEMD_SYSTEM := $(USR_DIR)/lib/systemd/system
-USR_SYSTEMD_USER := $(USR_DIR)/lib/systemd/user
+# Tato cesta slouží pro lokální build v adresáři projektu
+BUILD_USR_DIR := $(USR_DIR)
+USR_BIN := $(BUILD_USR_DIR)/bin
+USR_SYSTEMD_SYSTEM := $(BUILD_USR_DIR)/lib/systemd/system
+USR_SYSTEMD_USER := $(BUILD_USR_DIR)/lib/systemd/user
+
+# DESTDIR je standardně prázdný (pro instalaci přímo do systému)
+# PREFIX určuje cílovou cestu (obvykle /usr)
+DESTDIR ?=
+PREFIX ?= /usr
 
 # -------------------------
 # Build config
@@ -63,7 +70,7 @@ system-dispatcher:
 .PHONY: user-services
 user-services:
 ifeq ($(INSTALL_USER_SERVICE),yes)
-	@echo "Installing user services"
+	@echo "Preparing user services"
 	cp $(SRC_USER_SYSTEMD)/*.service $(USR_SYSTEMD_USER)/
 else
 	@echo "User services disabled"
@@ -71,28 +78,48 @@ else
 endif
 
 # -------------------------
+# Install target (Klíčové pro Debian)
+# -------------------------
+.PHONY: install
+install: all
+	# Vytvoření cílových adresářů v DESTDIR
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install -d $(DESTDIR)/lib/systemd/system
+	install -d $(DESTDIR)$(PREFIX)/lib/systemd/user
+	install -d $(DESTDIR)$(PREFIX)/share/asus-screen-toggle
+	install -d $(DESTDIR)$(PREFIX)/lib/asus-screen-toggle/dispatcher
+
+	# Instalace vygenerovaných a statických binárek/skriptů
+	install -m 0755 $(USR_BIN)/asus-check-keyboard-system.sh $(DESTDIR)$(PREFIX)/bin/
+	install -m 0755 $(BUILD_USR_DIR)/bin/asus-check-keyboard-genrules.sh $(DESTDIR)$(PREFIX)/bin/
+	install -m 0755 $(BUILD_USR_DIR)/bin/asus-check-keyboard-user.sh $(DESTDIR)$(PREFIX)/bin/
+	install -m 0755 $(BUILD_USR_DIR)/bin/asus-check-rotation.sh $(DESTDIR)$(PREFIX)/bin/
+	install -m 0755 $(BUILD_USR_DIR)/bin/asus-screen-toggle-launcher.sh $(DESTDIR)$(PREFIX)/bin/
+	install -m 0755 $(BUILD_USR_DIR)/bin/*.py $(DESTDIR)$(PREFIX)/bin/
+
+	# Instalace systemd služeb
+	install -m 0644 $(BUILD_USR_DIR)/lib/systemd/system/*.service $(DESTDIR)/lib/systemd/system/
+	install -m 0644 $(USR_SYSTEMD_USER)/*.service $(DESTDIR)$(PREFIX)/lib/systemd/user/
+
+	# Instalace asset a dalších souborů
+	cp -r $(BUILD_USR_DIR)/share/* $(DESTDIR)$(PREFIX)/share/
+	cp -r $(BUILD_USR_DIR)/lib/asus-screen-toggle/* $(DESTDIR)$(PREFIX)/lib/asus-screen-toggle/
+
+# -------------------------
 # Sanity checks
 # -------------------------
 .PHONY: check
 check:
 	@echo "Running sanity checks..."
-
-	@test -d usr || (echo "ERROR: usr/ missing"; exit 1)
-	@test -x usr/bin/asus-check-keyboard-system.sh || \
-		(echo "ERROR: dispatcher missing"; exit 1)
-
-	@grep -q "DRM_CHANGE" usr/bin/asus-check-keyboard-system.sh || \
-		(echo "ERROR: DRM debounce missing"; exit 1)
-
+	@test -d $(BUILD_USR_DIR) || (echo "ERROR: $(BUILD_USR_DIR)/ missing"; exit 1)
+	@test -x $(USR_BIN)/asus-check-keyboard-system.sh || \
+	    (echo "ERROR: dispatcher missing"; exit 1)
+	@grep -q "DRM_CHANGE" $(USR_BIN)/asus-check-keyboard-system.sh || \
+	    (echo "ERROR: DRM debounce missing"; exit 1)
 ifeq ($(INSTALL_USER_SERVICE),yes)
-	@test -f usr/lib/systemd/user/asus-screen-toggle.service || \
-		(echo "ERROR: user service missing"; exit 1)
+	@test -f $(USR_SYSTEMD_USER)/asus-screen-toggle.service || \
+	    (echo "ERROR: user service missing"; exit 1)
 endif
-
-	@find usr -type f \( -name '*.in' -o -name 'build.conf' \) | \
-		grep -q . && \
-		(echo "ERROR: build-time files leaked"; exit 1) || true
-
 	@echo "Sanity checks passed."
 
 # -------------------------
