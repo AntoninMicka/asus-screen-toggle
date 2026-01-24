@@ -1,3 +1,10 @@
+asus-screen-toggle (1.2.2-2) unstable; urgency=medium
+
+  * Release 1.2.2-2
+  * utilities
+  * fix deb build
+ -- Antonin Micka <antonin.micka@gmail.com>  Sun, 25 Jan 2026 00:47:06 +0100
+
 asus-screen-toggle (1.2.2-1) unstable; urgency=medium
 
   * dev utils
