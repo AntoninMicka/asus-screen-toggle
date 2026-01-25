@@ -176,6 +176,7 @@ class AsusAgent:
         self.indicator = None
         self.tray_backend = None
         self.menu = None
+        self.temporary_actions = []
 
         # Pro sledování změn souboru
         self.last_file_mtime = 0
@@ -195,6 +196,12 @@ class AsusAgent:
 
         # Timer pro sledování externích změn souboru (každé 2s)
         GLib.timeout_add_seconds(2, self._monitor_file_change)
+
+    def update_temporary_modes_availability(self, keyboard_connected: bool):
+        enabled = not keyboard_connected
+
+        for action in self.temporary_actions:
+            action.set_sensitive(enabled)
 
     # --- Konfigurace ---
     def _load_config(self):
@@ -358,16 +365,19 @@ class AsusAgent:
         m_mirror = Gtk.RadioMenuItem(label=_("🪞 Zrcadlení (Mirror)"), group=group[0])
         m_mirror.connect("toggled", self._on_mode_change, "temp-mirror")
         menu.append(m_mirror)
+        self.temporary_actions.append(m_mirror)
 
         # Reverse Mirror
         m_rev_mirror = Gtk.RadioMenuItem(label=_("🙃 Reverse Mirror (180°)"), group=group[0])
         m_rev_mirror.connect("toggled", self._on_mode_change, "temp-reverse-mirror")
         menu.append(m_rev_mirror)
+        self.temporary_actions.append(m_rev_mirror)
 
         # Dočasně jen primární
         m_temp_prim = Gtk.RadioMenuItem(label=_("🚫 Vypnout sekundární"), group=group[0])
         m_temp_prim.connect("toggled", self._on_mode_change, "temp-primary-only")
         menu.append(m_temp_prim)
+        self.temporary_actions.append(m_temp_prim)
 
         # Aktivace správného puntíku v menu
 
@@ -395,6 +405,14 @@ class AsusAgent:
 
         menu.show_all()
         return menu
+
+    def is_keyboard_connected(self):
+        result = subprocess.run(
+            ["asus-check-keyboard-user", "--keyboard-connected"],
+            stdout=subprocess.DEVNULL
+        )
+        return result.returncode == 0
+
 
     def _setup_appindicator(self):
         self.indicator = AppIndicator.Indicator.new(

@@ -80,6 +80,8 @@ class AsusSettingsApp(Gtk.Window):
             "temp-primary-only": "icon-yellow.svg"
         }
 
+        self.temporary_actions = []
+
         # Notebook s kartami
         self.notebook = Gtk.Notebook()
 
@@ -128,12 +130,15 @@ class AsusSettingsApp(Gtk.Window):
 
         self.btn_mode_tmp_mirror = self.create_mode_button(_("Zrcadlení"), ICON_TEMP, _("Dočasné zrcadlení"), "temp-mirror")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_mirror, True, True, 0)
+        self.temporary_actions.append(self.btn_mode_tmp_mirror)
 
         self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Otočené zrcadlení"), ICON_TEMP, _("Dočasné otočené zrcadlení"), "temp-reverse-mirror")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_reverse_mirror, True, True, 0)
+        self.temporary_actions.append(self.btn_mode_tmp_reverse_mirror)
 
         self.btn_mode_tmp_primary = self.create_mode_button(_("Jen Hlavní"), ICON_TEMP, _("Dočasný vypnout spodní"), "temp-primary-only")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_primary, True, True, 0)
+        self.temporary_actions.append(self.btn_mode_tmp_primary)
 
 
         self.page_home.pack_start(Gtk.Separator(), False, False, 10)
@@ -301,6 +306,20 @@ class AsusSettingsApp(Gtk.Window):
         btn.connect("clicked", self.on_mode_clicked)
 
         return btn
+
+    def is_keyboard_connected(self):
+        result = subprocess.run(
+            ["asus-check-keyboard-user", "--keyboard-connected"],
+            stdout=subprocess.DEVNULL
+        )
+        return result.returncode == 0
+
+
+    def update_temporary_modes_availability(self, keyboard_connected: bool):
+        enabled = not keyboard_connected
+
+        for action in self.temporary_actions:
+            action.set_sensitive(enabled)
 
     def update_home_ui_state(self, current_mode):
         """Zvýrazní aktivní tlačítko podle režimu."""
@@ -655,5 +674,6 @@ if __name__ == "__main__":
     app = AsusSettingsApp()
     app.set_icon_from_file(ICON_DESKTOP)
     app.connect("destroy", Gtk.main_quit)
+    app.update_temporary_modes_availability(app.is_keyboard_connected())
     app.show_all()
     Gtk.main()

@@ -19,6 +19,14 @@ else
     SECONDARY_DISPLAY_NAME="eDP-2"
 fi
 
+if [[ "$1" == "--keyboard-connected" ]]; then
+    if lsusb | grep -iq "${VENDOR_ID}:${PRODUCT_ID}"; then
+        exit 0   # true
+    else
+        exit 1   # false
+    fi
+fi
+
 # Pokud máme rotaci z monitor-sensor (uloženou v tmp), načteme ji
 if [[ -f /tmp/asus-rotation ]]; then
     source /tmp/asus-rotation
