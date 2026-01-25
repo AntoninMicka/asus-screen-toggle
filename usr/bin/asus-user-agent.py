@@ -250,7 +250,7 @@ class AsusAgent:
             try:
                 with open(STATE_FILE, 'r') as f:
                     mode = f.read().strip()
-                    if mode in ["automatic-enabled", "enforce-primary-only", "enforce-desktop"]:
+                    if mode in ["automatic-enabled", "enforce-primary-only", "enforce-desktop", "temp-mirror", "temp-reverse-mirror", "temp-primary-only"]:
                         print(_(f"📂 Načten režim ze souboru: {mode}"))
                         return mode
             except: pass

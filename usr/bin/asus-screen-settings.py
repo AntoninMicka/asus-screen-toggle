@@ -313,8 +313,8 @@ class AsusSettingsApp(Gtk.Window):
         for btn, mid in [(self.btn_mode_auto, "automatic-enabled"),
                          (self.btn_mode_primary, "enforce-primary-only"),
                          (self.btn_mode_desktop, "enforce-desktop"),
-                         (self.btn_mode_tmp_primary, "temp-primary-only")
-                         (self.btn_mode_tmp_mirror, "temp-mirror")
+                         (self.btn_mode_tmp_primary, "temp-primary-only"),
+                         (self.btn_mode_tmp_mirror, "temp-mirror"),
                          (self.btn_mode_tmp_reverse_mirror, "temp-reverse-mirror")]:
             if mid == current_mode:
                 btn.set_sensitive(False) # Vizuálně indikuje "vybráno"
@@ -349,6 +349,9 @@ class AsusSettingsApp(Gtk.Window):
             print(_(f"systemd volani {mode}"))
             try:
                 os.system("systemctl --user start asus-screen-toggle.service > /dev/null 2>&1")
+                os.makedirs(STATE_DIR, exist_ok=True)
+                with open(STATE_FILE, 'w') as f:
+                    f.write(mode)
             except Exception as e:
                 self.show_error(_(f"Nepodařilo se zapsat stav: {e}"))
                 return

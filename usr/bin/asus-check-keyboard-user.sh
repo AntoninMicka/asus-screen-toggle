@@ -58,7 +58,7 @@ else
 fi
 
 # --- Automatický návrat z dočasných režimů ---
-if [[ "$PHYSICAL_KEYBOARD_CONNECTED" == "true" && "$USER_STATE" == temporary-* ]]; then
+if [[ "$PHYSICAL_KEYBOARD_CONNECTED" == "true" && "$USER_STATE" == temp-* ]]; then
     echo "$(_ "Klávesnice připojena → návrat do automatického režimu")"
     USER_STATE="automatic-enabled"
     echo "$USER_STATE" > "$STATE_FILE"
