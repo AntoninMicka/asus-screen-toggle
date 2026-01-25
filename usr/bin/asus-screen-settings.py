@@ -132,6 +132,10 @@ class AsusSettingsApp(Gtk.Window):
         self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Otočené zrcadlení"), ICON_TEMP, _("Dočasné otočené zrcadlení"), "temp-reverse-mirror")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_reverse_mirror, True, True, 0)
 
+        self.btn_mode_tmp_primary = self.create_mode_button(_("Jen Hlavní"), ICON_TEMP, _("Dočasný vypnout spodní"), "temp-primary-only")
+        hbox_tmp_modes.pack_start(self.btn_mode_tmp_primary, True, True, 0)
+
+
         self.page_home.pack_start(Gtk.Separator(), False, False, 10)
 
         # Tlačítko Kontrola
@@ -308,7 +312,10 @@ class AsusSettingsApp(Gtk.Window):
 
         for btn, mid in [(self.btn_mode_auto, "automatic-enabled"),
                          (self.btn_mode_primary, "enforce-primary-only"),
-                         (self.btn_mode_desktop, "enforce-desktop")]:
+                         (self.btn_mode_desktop, "enforce-desktop"),
+                         (self.btn_mode_tmp_primary, "temp-primary-only")
+                         (self.btn_mode_tmp_mirror, "temp-mirror")
+                         (self.btn_mode_tmp_reverse_mirror, "temp-reverse-mirror")]:
             if mid == current_mode:
                 btn.set_sensitive(False) # Vizuálně indikuje "vybráno"
                 # btn.get_style_context().add_class("suggested-action") # Alternativa pro GTK CSS
@@ -316,7 +323,7 @@ class AsusSettingsApp(Gtk.Window):
                 btn.set_sensitive(True)
 
         # Okamžitá vizuální zpětná vazba v okně
-        # self.update_window_icon(current_mode)
+        self.update_window_icon(current_mode)
 
     def on_mode_clicked(self, btn):
         mode = btn.mode_id
@@ -325,7 +332,7 @@ class AsusSettingsApp(Gtk.Window):
         success = False
 
         # 1. Zkusit D-Bus (synchronizace s Agentem)
-        if DBUS_AVAILABLE:
+        if DBUS_AVAILABLE and self.user_chk_dbus.get_active():
             try:
                 bus = SessionBus()
                 # Získáme proxy objekt
@@ -336,6 +343,15 @@ class AsusSettingsApp(Gtk.Window):
                 success = True
             except Exception as e:
                 print(_(f"D-Bus chyba (Agent neběží?): {e}"))
+
+        if not success:
+            import os
+            print(_(f"systemd volani {mode}"))
+            try:
+                os.system("systemctl --user start asus-screen-toggle.service > /dev/null 2>&1")
+            except Exception as e:
+                self.show_error(_(f"Nepodařilo se zapsat stav: {e}"))
+                return
 
         # 2. Fallback: Zápis do souboru (pokud D-Bus selhal)
         if not success:
@@ -436,9 +452,8 @@ class AsusSettingsApp(Gtk.Window):
 
         if os.path.exists(icon_path):
             try:
-                self.set_icon_from_file(icon_path)
-                # Pokud používáte KDE, tohle pomůže vynutit refresh v taskbaru
-                self.set_wmclass("asus-screen-settings", "AsusScreenSettings")
+                # self.set_icon_from_file(icon_path)
+                app.set_icon_name(icon_path)
             except Exception as e:
                 print(f"Nepodařilo se nastavit ikonu okna: {e}")
 

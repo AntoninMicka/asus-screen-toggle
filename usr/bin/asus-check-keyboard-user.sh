@@ -43,10 +43,15 @@ printf "$(_ "Sensor: %s")\n" "$DIR"
 
 # --- 3. Rozhodovací logika (Matrix) ---
 
+FORCE_MIRROR=false
+FORCE_REVERSE=false
+DISABLE_ROTATION=false
+
 # A) Je fyzicky připojená klávesnice?
 PHYSICAL_KEYBOARD_CONNECTED=false
 if lsusb | grep -iq "${VENDOR_ID}:${PRODUCT_ID}"; then
     PHYSICAL_KEYBOARD_CONNECTED=true
+    DISABLE_ROTATION=true
     echo "$(_ "Fyzická klávesnice: PŘIPOJENA")"
 else
     echo "$(_ "Fyzická klávesnice: ODPOJENA")"
@@ -64,13 +69,33 @@ case "$USER_STATE" in
     enforce-primary-only)
         echo "$(_ "Vynuceno: Jen primární displej")"
         ENABLE_BOTTOM_SCREEN=false
+        DISABLE_ROTATION=true
         ;;
     enforce-desktop)
         echo "$(_ "Vynuceno: Desktop mód (oba displeje)")"
         ENABLE_BOTTOM_SCREEN=true
         ;;
-    *)
-        echo "$(_ "Režim Auto: Ponechávám vypočtený stav.")"
+    automatic-enabled)
+        echo "$(_ "Režim Auto: Klávesnice rozhoduje")"
+        ;;
+    temporary-mirror)
+        echo "$(_ "Dočasně: Zrcadlení displejů (auto rotace)")"
+        ENABLE_BOTTOM_SCREEN=true
+        FORCE_MIRROR=true
+        ;;
+
+    temporary-reverse-mirror)
+        echo "$(_ "Dočasně: Reverzní zrcadlení (180°)")"
+        ENABLE_BOTTOM_SCREEN=true
+        FORCE_MIRROR=true
+        FORCE_REVERSE=true
+        DISABLE_ROTATION=true
+        ;;
+
+    temporary-primary-only)
+        echo "$(_ "Dočasně: Pouze hlavní displej (bez rotace)")"
+        ENABLE_BOTTOM_SCREEN=false
+        DISABLE_ROTATION=true
         ;;
 esac
 
@@ -80,12 +105,14 @@ esac
 # nebo nechte, pokud editujete soubor. Zde pro úplnost:
 
 DISPLAY_ROTATION="normal"
-case "$DIR" in
-*normal*)    DISPLAY_ROTATION="normal"   ;;
-*bottom-up*) DISPLAY_ROTATION="inverted" ;;
-*left-up*)   DISPLAY_ROTATION="left"     ;;
-*right-up*)  DISPLAY_ROTATION="right"    ;;
+if [[ "$DISABLE_ROTATION" != "true" ]]; then
+    case "$DIR" in
+    *normal*)    DISPLAY_ROTATION="normal"   ;;
+    *bottom-up*) DISPLAY_ROTATION="inverted" ;;
+    *left-up*)   DISPLAY_ROTATION="left"     ;;
+    *right-up*)  DISPLAY_ROTATION="right"    ;;
 esac
+fi
 
 # --- 5. Aplikace nastavení (X11 / KDE / Wayland) ---
 
@@ -97,6 +124,19 @@ if [[ "$user" == "sddm" ]]; then exit 0; fi
 
 # === X11 ===
 if [[ "$type" == "x11" ]]; then
+    if [[ "$FORCE_MIRROR" == "true" ]]; then
+        echo "$(_ "Aplikuji: Zrcadlení (X11)")"
+        xrandr --output ${SECONDARY_DISPLAY_NAME} --auto --same-as ${PRIMARY_DISPLAY_NAME}
+
+        if [[ "$FORCE_REVERSE" == "true" ]]; then
+            xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate inverted
+            xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate normal
+        else
+            xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION}
+            xrandr --output ${SECONDARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION}
+        fi
+        exit 0
+    fi
     # Zde používáme naši vypočtenou proměnnou ENABLE_BOTTOM_SCREEN
     if [[ "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
         echo "$(_ "Aplikuji: Single Screen (X11)")"
@@ -115,6 +155,25 @@ fi
 
 # === Wayland (KDE) ===
 if [[ "$type" == "wayland" && "$desktop_env" == "KDE" ]]; then
+    if [[ "$FORCE_MIRROR" == "true" ]]; then
+        echo "$(_ "Aplikuji: Zrcadlení (KDE)")"
+        kscreen-doctor \
+            output.${SECONDARY_DISPLAY_NAME}.enable \
+            output.${SECONDARY_DISPLAY_NAME}.clone.${PRIMARY_DISPLAY_NAME}
+
+        if [[ "$FORCE_REVERSE" == "true" ]]; then
+            kscreen-doctor \
+                output.${PRIMARY_DISPLAY_NAME}.rotation.inverted \
+                output.${SECONDARY_DISPLAY_NAME}.rotation.normal
+        else
+            kscreen-doctor \
+                output.${PRIMARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION} \
+                output.${SECONDARY_DISPLAY_NAME}.rotation.${DISPLAY_ROTATION}
+        fi
+        exit 0
+    fi
+
+
     if [[ "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
         printf "%s\n" "$(_ "Aplikuji: Single Screen (KDE)")"
         /usr/bin/kscreen-doctor output.${PRIMARY_DISPLAY_NAME}.rotation.normal
@@ -178,6 +237,20 @@ fi
 
 # === Wayland (Generic / wlroots) ===
 if [[ "$type" == "wayland" ]]; then
+    if [[ "$FORCE_MIRROR" == "true" ]]; then
+        echo "$(_ "Aplikuji: Zrcadlení (Wlr)")"
+        wlr-randr --output ${SECONDARY_DISPLAY_NAME} --same-as ${PRIMARY_DISPLAY_NAME}
+
+        if [[ "$FORCE_REVERSE" == "true" ]]; then
+            wlr-randr --output ${PRIMARY_DISPLAY_NAME} --rotate inverted
+            wlr-randr --output ${SECONDARY_DISPLAY_NAME} --rotate normal
+        else
+            wlr-randr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION}
+            wlr-randr --output ${SECONDARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION}
+        fi
+        exit 0
+    fi
+
     if [[ "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
         echo "$(_ "Aplikuji: Single Screen (Wlr)")"
         wlr-randr --output ${PRIMARY_DISPLAY_NAME} --rotate normal
