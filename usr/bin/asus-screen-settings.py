@@ -62,6 +62,7 @@ ICON_PATH = "/usr/share/asus-screen-toggle"
 ICON_AUTO = os.path.join(ICON_PATH, "icon-green.svg")
 ICON_PRIMARY = os.path.join(ICON_PATH, "icon-red.svg")
 ICON_DESKTOP = os.path.join(ICON_PATH, "icon-blue.svg")
+ICON_TEMP = os.path.join(ICON_PATH, "icon-yellow.svg") # Dočasný režim (vytvoříme/přiřadíme)
 
 class AsusSettingsApp(Gtk.Window):
     def __init__(self):
@@ -105,6 +106,23 @@ class AsusSettingsApp(Gtk.Window):
         hbox_modes.pack_start(self.btn_mode_desktop, True, True, 0)
 
         # Oddělovač
+        self.page_home.pack_start(Gtk.Separator(), False, False, 10)
+
+        # Sekce pro dočasné režimy
+        lbl_tmp = Gtk.Label(label=_("<span size='x-large' weight='bold'>Dočasné / Prezentační režimy:</span><br/><i>Tyto režimy se automaticky zruší po připojení klávesnice.</i>"))
+        lbl_tmp.set_use_markup(True)
+        self.page_home.pack_start(lbl_tmp, True, True, 0)
+
+        hbox_tmp_modes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        hbox_tmp_modes.set_halign(Gtk.Align.CENTER)
+        self.page_home.pack_start(hbox_tmp_modes, True, True, 0)
+
+        self.btn_mode_tmp_mirror = self.create_mode_button(_("Zrcadlení"), ICON_TEMP, _("Vynutit dočasné zrcadlení"), "temp-mirror")
+        hbox_tmp_modes.pack_start(self.btn_mode_tmp_mirror, True, True, 0)
+
+        self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Otočené zrcadlení"), ICON_TEMP, _("Vynutit dočasné otočené zrcadlení"), "temp-reverse-mirror")
+        hbox_tmp_modes.pack_start(self.btn_mode_tmp_reverse_mirror, True, True, 0)
+
         self.page_home.pack_start(Gtk.Separator(), False, False, 10)
 
         # Tlačítko Kontrola
@@ -398,6 +416,22 @@ class AsusSettingsApp(Gtk.Window):
         else:
             label.set_markup(_("<span foreground='red'>Zastaveno</span>"))
             button.set_label(_("Spustit"))
+
+    def update_window_icon(self, mode):
+        icon_map = {
+            "automatic-enabled": "icon-green.svg",
+            "enforce-desktop": "icon-blue.svg",
+            "enforce-primary-only": "icon-red.svg",
+            "temp-mirror": "icon-yellow.svg",
+            "temp-reverse-mirror": "icon-yellow.svg",
+            "temp-primary-only": "icon-yellow.svg"
+        }
+
+        icon_name = icon_map.get(mode, "icon-green.svg")
+        full_path = os.path.join("/usr/share/asus-screen-toggle", icon_name)
+
+        if os.path.exists(full_path):
+            self.set_icon_from_file(full_path)
 
     def load_configs(self):
         # 1. Načíst SYSTÉMOVÉ nastavení (defaulty + /etc)
