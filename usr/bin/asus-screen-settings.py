@@ -109,7 +109,7 @@ class AsusSettingsApp(Gtk.Window):
         self.page_home.pack_start(Gtk.Separator(), False, False, 10)
 
         # Sekce pro dočasné režimy
-        lbl_tmp = Gtk.Label(label=_("<span size='x-large' weight='bold'>Dočasné / Prezentační režimy:</span><br/><i>Tyto režimy se automaticky zruší po připojení klávesnice.</i>"))
+        lbl_tmp = Gtk.Label(label=_("<span size='x-large' weight='bold'>Dočasné / Prezentační režimy:</span>\n<i>Tyto režimy se automaticky zruší po připojení klávesnice.</i>"))
         lbl_tmp.set_use_markup(True)
         self.page_home.pack_start(lbl_tmp, True, True, 0)
 
@@ -117,10 +117,10 @@ class AsusSettingsApp(Gtk.Window):
         hbox_tmp_modes.set_halign(Gtk.Align.CENTER)
         self.page_home.pack_start(hbox_tmp_modes, True, True, 0)
 
-        self.btn_mode_tmp_mirror = self.create_mode_button(_("Zrcadlení"), ICON_TEMP, _("Vynutit dočasné zrcadlení"), "temp-mirror")
+        self.btn_mode_tmp_mirror = self.create_mode_button(_("Zrcadlení"), ICON_TEMP, _("Dočasné zrcadlení"), "temp-mirror")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_mirror, True, True, 0)
 
-        self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Otočené zrcadlení"), ICON_TEMP, _("Vynutit dočasné otočené zrcadlení"), "temp-reverse-mirror")
+        self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Otočené zrcadlení"), ICON_TEMP, _("Dočasné otočené zrcadlení"), "temp-reverse-mirror")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_reverse_mirror, True, True, 0)
 
         self.page_home.pack_start(Gtk.Separator(), False, False, 10)
