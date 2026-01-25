@@ -71,6 +71,15 @@ class AsusSettingsApp(Gtk.Window):
         self.set_default_size(650, 600)
         self.set_position(Gtk.WindowPosition.CENTER)
 
+        self.icon_map = {
+            "automatic-enabled": "icon-green.svg",
+            "enforce-desktop": "icon-blue.svg",
+            "enforce-primary-only": "icon-red.svg",
+            "temp-mirror": "icon-yellow.svg",
+            "temp-reverse-mirror": "icon-yellow.svg",
+            "temp-primary-only": "icon-yellow.svg"
+        }
+
         # Notebook s kartami
         self.notebook = Gtk.Notebook()
 
@@ -244,6 +253,7 @@ class AsusSettingsApp(Gtk.Window):
         btn_save.connect("clicked", self.on_save_clicked)
         bbox.add(btn_save)
 
+        #self.update_window_icon("automatic-enabled")
         # Start
         self.current_mode_in_ui = None # Pro sledování stavu UI
         self.refresh_all()
@@ -304,6 +314,9 @@ class AsusSettingsApp(Gtk.Window):
                 # btn.get_style_context().add_class("suggested-action") # Alternativa pro GTK CSS
             else:
                 btn.set_sensitive(True)
+
+        # Okamžitá vizuální zpětná vazba v okně
+        # self.update_window_icon(current_mode)
 
     def on_mode_clicked(self, btn):
         mode = btn.mode_id
@@ -418,20 +431,16 @@ class AsusSettingsApp(Gtk.Window):
             button.set_label(_("Spustit"))
 
     def update_window_icon(self, mode):
-        icon_map = {
-            "automatic-enabled": "icon-green.svg",
-            "enforce-desktop": "icon-blue.svg",
-            "enforce-primary-only": "icon-red.svg",
-            "temp-mirror": "icon-yellow.svg",
-            "temp-reverse-mirror": "icon-yellow.svg",
-            "temp-primary-only": "icon-yellow.svg"
-        }
+        icon_name = self.icon_map.get(mode, "icon-green.svg")
+        icon_path = os.path.join("/usr/share/asus-screen-toggle", icon_name)
 
-        icon_name = icon_map.get(mode, "icon-green.svg")
-        full_path = os.path.join("/usr/share/asus-screen-toggle", icon_name)
-
-        if os.path.exists(full_path):
-            self.set_icon_from_file(full_path)
+        if os.path.exists(icon_path):
+            try:
+                self.set_icon_from_file(icon_path)
+                # Pokud používáte KDE, tohle pomůže vynutit refresh v taskbaru
+                self.set_wmclass("asus-screen-settings", "AsusScreenSettings")
+            except Exception as e:
+                print(f"Nepodařilo se nastavit ikonu okna: {e}")
 
     def load_configs(self):
         # 1. Načíst SYSTÉMOVÉ nastavení (defaulty + /etc)
@@ -626,6 +635,7 @@ class AsusSettingsApp(Gtk.Window):
 
 if __name__ == "__main__":
     app = AsusSettingsApp()
+    app.set_icon_from_file(ICON_DESKTOP)
     app.connect("destroy", Gtk.main_quit)
     app.show_all()
     Gtk.main()
