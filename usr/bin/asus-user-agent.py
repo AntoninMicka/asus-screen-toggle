@@ -297,8 +297,8 @@ class AsusAgent:
 
     def _set_icon_by_mode(self):
         if self.tray_backend == "sni":
-            if self.mode.startswith("temp-"): self.sni.set_icon(ICON_TEMP)
-            if self.mode == "automatic-enabled": self.sni.set_icon(ICON_AUTO_NAME)
+            if self.mode.startswith("temp-"): self.sni.set_icon(ICON_TEMP_NAME)
+            elif self.mode == "automatic-enabled": self.sni.set_icon(ICON_AUTO_NAME)
             elif self.mode == "enforce-primary-only": self.sni.set_icon(ICON_PRIMARY_NAME)
             else: self.sni.set_icon(ICON_DESKTOP_NAME)
         elif self.indicator:
@@ -307,7 +307,7 @@ class AsusAgent:
                 icon_to_set = ICON_TEMP if os.path.exists(ICON_TEMP) else ICON_PRIMARY
                 # Nastavíme stav na ATTENTION pro zvýraznění
                 if self.indicator: self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
-            if self.mode == "automatic-enabled":
+            elif self.mode == "automatic-enabled":
                 if os.path.exists(ICON_AUTO): icon_to_set = ICON_AUTO
                 self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
             elif self.mode == "enforce-primary-only":

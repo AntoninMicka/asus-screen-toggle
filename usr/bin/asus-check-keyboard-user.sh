@@ -57,6 +57,14 @@ else
     echo "$(_ "Fyzická klávesnice: ODPOJENA")"
 fi
 
+# --- Automatický návrat z dočasných režimů ---
+if [[ "$PHYSICAL_KEYBOARD_CONNECTED" == "true" && "$USER_STATE" == temporary-* ]]; then
+    echo "$(_ "Klávesnice připojena → návrat do automatického režimu")"
+    USER_STATE="automatic-enabled"
+    echo "$USER_STATE" > "$STATE_FILE"
+fi
+
+
 # B) Výpočet finálního stavu spodního displeje
 # Defaultně (Auto) platí: Klávesnice je připojená => Vypnout spodek.
 ENABLE_BOTTOM_SCREEN=true
