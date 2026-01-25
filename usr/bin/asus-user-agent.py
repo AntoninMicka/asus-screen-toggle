@@ -326,6 +326,8 @@ class AsusAgent:
             try: self.indicator.set_icon(icon_to_set)
             except: self.indicator.set_icon(ICON_NAME)
 
+        self.update_temporary_modes_availability(self.is_keyboard_connected())
+
     def _on_mode_change(self, widget, mode_name):
         if widget.get_active():
             self.mode = mode_name
