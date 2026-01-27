@@ -137,14 +137,6 @@ class AsusSettingsApp(Gtk.Window):
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_desktop, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_desktop)
 
-        self.btn_mode_tmp_mirror = self.create_mode_button(_("Zrcadlení"), ICON_TEMP, _("Dočasné zrcadlení"), "temp-mirror")
-        hbox_tmp_modes.pack_start(self.btn_mode_tmp_mirror, True, True, 0)
-        self.temporary_actions.append(self.btn_mode_tmp_mirror)
-
-        self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Otočené zrcadlení"), ICON_TEMP, _("Dočasné otočené zrcadlení"), "temp-reverse-mirror")
-        hbox_tmp_modes.pack_start(self.btn_mode_tmp_reverse_mirror, True, True, 0)
-        self.temporary_actions.append(self.btn_mode_tmp_reverse_mirror)
-
         self.btn_mode_tmp_primary = self.create_mode_button(_("Jen Hlavní"), ICON_TEMP, _("Dočasný vypnout spodní"), "temp-primary-only")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_primary, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_primary)
@@ -152,6 +144,18 @@ class AsusSettingsApp(Gtk.Window):
         self.btn_mode_tmp_secondary = self.create_mode_button(_("Jen Spodní"), ICON_TEMP, _("Dočasně jen sekundární"), "temp-secondary-only")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_secondary, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_secondary)
+
+        hbox_tmp_modes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        hbox_tmp_modes.set_halign(Gtk.Align.CENTER)
+        self.page_home.pack_start(hbox_tmp_modes, True, True, 0)
+
+        self.btn_mode_tmp_mirror = self.create_mode_button(_("Zrcadlení"), ICON_TEMP, _("Dočasné zrcadlení"), "temp-mirror")
+        hbox_tmp_modes.pack_start(self.btn_mode_tmp_mirror, True, True, 0)
+        self.temporary_actions.append(self.btn_mode_tmp_mirror)
+
+        self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Otočené zrcadlení"), ICON_TEMP, _("Dočasné otočené zrcadlení"), "temp-reverse-mirror")
+        hbox_tmp_modes.pack_start(self.btn_mode_tmp_reverse_mirror, True, True, 0)
+        self.temporary_actions.append(self.btn_mode_tmp_reverse_mirror)
 
         self.btn_mode_tmp_rotated = self.create_mode_button(_("Otočený Desktop"), ICON_TEMP, _("Rozšířená plocha (180°)"), "temp-rotated-desktop")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_rotated, True, True, 0)
