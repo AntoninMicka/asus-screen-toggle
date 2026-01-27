@@ -29,6 +29,7 @@ configure)
     if [ ! -e "$CONFIG_FILE" ]; then
         # získání hodnot z debconf
         db_get asus-screen-toggle/usb_keyboard
+        PREFERRED_MODE="automatic-enabled"
         SELECTED="$RET"
         VENDOR_ID="0b05"
         PRODUCT_ID="1bf2"
@@ -58,6 +59,7 @@ ENABLE_DIRECT_CALL=false
 ENABLE_DBUS=false
 ENABLE_SIGNAL=false
 ENABLE_SYSTEMD_CALL=true
+PREFERRED_MODE=automatic-enabled
 EOF
         # 2. Registrace souboru přes ucf
         ucf --debconf-ok "$TMP_CONFIG_FILE" "$CONFIG_FILE"

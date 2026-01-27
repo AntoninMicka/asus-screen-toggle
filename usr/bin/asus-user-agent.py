@@ -197,11 +197,17 @@ class AsusAgent:
         # Timer pro sledování externích změn souboru (každé 2s)
         GLib.timeout_add_seconds(2, self._monitor_file_change)
 
-    def update_temporary_modes_availability(self, keyboard_connected: bool):
+    def update_temporary_modes_availability(self):
+        """Aktualizuje citlivost dočasných režimů v menu podle stavu klávesnice."""
+        keyboard_connected = self.is_keyboard_connected()
         enabled = not keyboard_connected
 
+        if not self.temporary_actions:
+            return
+
         for action in self.temporary_actions:
-            action.set_sensitive(enabled)
+            if action:
+                action.set_sensitive(enabled)
 
     # --- Konfigurace ---
     def _load_config(self):
@@ -257,8 +263,14 @@ class AsusAgent:
             try:
                 with open(STATE_FILE, 'r') as f:
                     mode = f.read().strip()
-                    if mode in ["automatic-enabled", "enforce-primary-only", "enforce-desktop", "temp-mirror", "temp-reverse-mirror", "temp-primary-only"]:
-                        print(_(f"📂 Načten režim ze souboru: {mode}"))
+                    # Rozšířený seznam validních módů
+                    valid_modes = [
+                        "automatic-enabled", "automatic-disabled", "temp-desktop",
+                        "temp-mirror", "temp-reverse-mirror", "temp-primary-only",
+                        "temp-secondary-only", "temp-rotated-desktop"
+                    ]
+                    if mode in valid_modes:
+                        if not silent: print(_(f"📂 Načten režim ze souboru: {mode}"))
                         return mode
             except: pass
         return "automatic-enabled"
@@ -303,30 +315,36 @@ class AsusAgent:
         except: pass
 
     def _set_icon_by_mode(self):
+        #"automatic-enabled", "automatic-disabled", "temp-desktop",
+        # "temp-mirror", "temp-reverse-mirror", "temp-primary-only",
+        # "temp-secondary-only", "temp-rotated-desktop"
+
+        # Update dostupnosti menu prvků při každé změně ikony/stavu
+        self.update_temporary_modes_availability()
+
         if self.tray_backend == "sni":
             if self.mode.startswith("temp-"): self.sni.set_icon(ICON_TEMP_NAME)
             elif self.mode == "automatic-enabled": self.sni.set_icon(ICON_AUTO_NAME)
-            elif self.mode == "enforce-primary-only": self.sni.set_icon(ICON_PRIMARY_NAME)
+            elif self.mode == "automatic-disabled": self.sni.set_icon(ICON_PRIMARY_NAME)
             else: self.sni.set_icon(ICON_DESKTOP_NAME)
         elif self.indicator:
             icon_to_set = ICON_NAME
             if self.mode.startswith("temp-"):
                 icon_to_set = ICON_TEMP if os.path.exists(ICON_TEMP) else ICON_PRIMARY
-                # Nastavíme stav na ATTENTION pro zvýraznění
-                if self.indicator: self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
             elif self.mode == "automatic-enabled":
                 if os.path.exists(ICON_AUTO): icon_to_set = ICON_AUTO
                 self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-            elif self.mode == "enforce-primary-only":
-                if os.path.exists(ICON_PRIMARY): icon_to_set = ICON_PRIMARY
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
+            elif self.mode == "automatic-disabled":
+                if os.path.exists(ICON_AUTO): icon_to_set = ICON_PRIMARY
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
             else:
+                icon_to_set = ICON_PRIMARY if self.mode == "enforce-primary-only" else ICON_DESKTOP
                 if os.path.exists(ICON_DESKTOP): icon_to_set = ICON_DESKTOP
                 self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
+
             try: self.indicator.set_icon(icon_to_set)
             except: self.indicator.set_icon(ICON_NAME)
-
-        self.update_temporary_modes_availability(self.is_keyboard_connected())
 
     def _on_mode_change(self, widget, mode_name):
         if widget.get_active():
@@ -337,58 +355,67 @@ class AsusAgent:
 
     def _build_menu(self):
         menu = Gtk.Menu()
+        self.temporary_actions = [] # Vyčistit seznam pro čerstvé reference
 
         item = Gtk.MenuItem(label=_("Asus Screen Control"))
         item.set_sensitive(False)
         menu.append(item)
         menu.append(Gtk.SeparatorMenuItem())
 
-        r_auto = Gtk.RadioMenuItem(label=_("🤖 Automaticky"))
-        r_auto.connect("toggled", self._on_mode_change, "automatic-enabled")
-        menu.append(r_auto)
+#         --- HLAVNÍ REŽIMY ---
+#         r_auto = Gtk.RadioMenuItem(label=_("🤖🖥️🖥️ Oba displeje automaticky"))
+#         r_auto.connect("toggled", self._on_mode_change, "automatic-enabled")
+#         menu.append(r_auto)
+#
+#         group = r_auto.get_group()
+#         r_prim = Gtk.RadioMenuItem(label=_("💻 Jen hlavní displej"), group=group[0])
+#         r_prim.connect("toggled", self._on_mode_change, "automatic-disabled")
+#         menu.append(r_prim)
 
-        group = r_auto.get_group()
-        r_prim = Gtk.RadioMenuItem(label=_("💻 Jen hlavní displej"), group=group[0])
-        r_prim.connect("toggled", self._on_mode_change, "enforce-primary-only")
-        menu.append(r_prim)
-
-        r_both = Gtk.RadioMenuItem(label=_("🖥️🖥️ Oba displeje"), group=group[0])
-        r_both.connect("toggled", self._on_mode_change, "enforce-desktop")
-        menu.append(r_both)
+        group = None
 
         menu.append(Gtk.SeparatorMenuItem())
 
-        # Sekce dočasných režimů
-        temp_label = Gtk.MenuItem(label=_("🕒 Dočasné režimy (do připojení klávesnice)"))
+        # --- DOČASNÉ REŽIMY ---
+        temp_label = Gtk.MenuItem(label=_("🕒 Dočasné režimy (pouze bez klávesnice)"))
         temp_label.set_sensitive(False)
         menu.append(temp_label)
 
-        # Mirror
-        m_mirror = Gtk.RadioMenuItem(label=_("🪞 Zrcadlení (Mirror)"), group=group[0])
-        m_mirror.connect("toggled", self._on_mode_change, "temp-mirror")
-        menu.append(m_mirror)
-        self.temporary_actions.append(m_mirror)
+        # Pomocná funkce pro přidání dočasného prvku
+        def add_temp_item(label, mode, group = None):
+            m_item = Gtk.RadioMenuItem(label=label, group=group[0] if group else None)
+            m_item.connect("toggled", self._on_mode_change, mode)
+            menu.append(m_item)
+            self.temporary_actions.append(m_item)
+            return m_item
 
-        # Reverse Mirror
-        m_rev_mirror = Gtk.RadioMenuItem(label=_("🙃 Reverse Mirror (180°)"), group=group[0])
-        m_rev_mirror.connect("toggled", self._on_mode_change, "temp-reverse-mirror")
-        menu.append(m_rev_mirror)
-        self.temporary_actions.append(m_rev_mirror)
+        m_desktop = add_temp_item(_("🖥️🖥️ Oba displeje (Desktop)"), "temp-desktop")
+        group = m_desktop.get_group()
+        m_mirror = add_temp_item(_("🪞 Zrcadlení (Mirror)"), "temp-mirror", group)
+        m_rev_mirror = add_temp_item(_("🙃 Otočené zrcadlení (180°)"), "temp-reverse-mirror", group)
+        m_rot_desk = add_temp_item(_("🔄 Otočený Desktop"), "temp-rotated-desktop", group)
+        m_temp_prim = add_temp_item(_("🚫 Pouze primární"), "temp-primary-only", group)
+        m_temp_sec = add_temp_item(_("📺 Pouze sekundární"), "temp-secondary-only", group)
 
-        # Dočasně jen primární
-        m_temp_prim = Gtk.RadioMenuItem(label=_("🚫 Vypnout sekundární"), group=group[0])
-        m_temp_prim.connect("toggled", self._on_mode_change, "temp-primary-only")
-        menu.append(m_temp_prim)
-        self.temporary_actions.append(m_temp_prim)
+        # Nastavení aktivního prvku
+        modes_map = {
+            # "automatic-enabled": r_auto,
+            # "automatic-disabled": r_prim,
+            "temp-desktop": m_desktop,
+            "temp-mirror": m_mirror,
+            "temp-reverse-mirror": m_rev_mirror,
+            "temp-rotated-desktop": m_rot_desk,
+            "temp-primary-only": m_temp_prim,
+            "temp-secondary-only": m_temp_sec
+        }
+        active_widget = modes_map.get(self.mode)
+        if active_widget:
+            active_widget.set_active(True)
 
-        # Aktivace správného puntíku v menu
+        # Aktualizovat sensitive stav hned při buildu
+        self.update_temporary_modes_availability()
 
-        if self.mode == "automatic-enabled": r_auto.set_active(True)
-        elif self.mode == "enforce-primary-only": r_prim.set_active(True)
-        elif self.mode == "enforce-desktop": r_both.set_active(True)
-        elif self.mode == "temp-mirror": m_mirror.set_active(True)
-        elif self.mode == "temp-reverse-mirror": m_rev_mirror.set_active(True)
-        elif self.mode == "temp-primary-only": m_temp_prim.set_active(True)
+        menu.append(Gtk.SeparatorMenuItem())
 
         menu.append(Gtk.SeparatorMenuItem())
         item_sets = Gtk.MenuItem(label=_("⚙️ Nastavení"))
@@ -449,6 +476,7 @@ class AsusAgent:
     def _show_gtk_menu(self, button):
         try:
             self.menu = self._build_menu()
+            self.update_temporary_modes_availability()
             self.menu.show_all()
             self.menu.popup(None, None, None, None, 0, 0)
         except Exception as e:

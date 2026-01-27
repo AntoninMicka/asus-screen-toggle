@@ -73,11 +73,16 @@ class AsusSettingsApp(Gtk.Window):
 
         self.icon_map = {
             "automatic-enabled": "icon-green.svg",
+            "automatic-disabled": "icon-red.svg",
             "enforce-desktop": "icon-blue.svg",
             "enforce-primary-only": "icon-red.svg",
+            # Všechny dočasné režimy budou žluté
+            "temp-desktop": "icon-yellow.svg",
             "temp-mirror": "icon-yellow.svg",
             "temp-reverse-mirror": "icon-yellow.svg",
-            "temp-primary-only": "icon-yellow.svg"
+            "temp-rotated-desktop": "icon-yellow.svg",
+            "temp-primary-only": "icon-yellow.svg",
+            "temp-secondary-only": "icon-yellow.svg"
         }
 
         self.temporary_actions = []
@@ -100,33 +105,37 @@ class AsusSettingsApp(Gtk.Window):
         lbl_welcome.set_use_markup(True)
         self.page_home.pack_start(lbl_welcome, False, False, 10)
 
-        hbox_modes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
-        hbox_modes.set_halign(Gtk.Align.CENTER)
-        self.page_home.pack_start(hbox_modes, True, True, 0)
-
-        # 1. Tlačítko AUTO
-        self.btn_mode_auto = self.create_mode_button(_("Automaticky"), ICON_AUTO, _("Senzory"), "automatic-enabled")
-        hbox_modes.pack_start(self.btn_mode_auto, True, True, 0)
-
-        # 2. Tlačítko PRIMARY
-        self.btn_mode_primary = self.create_mode_button(_("Jen Hlavní"), ICON_PRIMARY, _("Vypnout spodní"), "enforce-primary-only")
-        hbox_modes.pack_start(self.btn_mode_primary, True, True, 0)
-
-        # 3. Tlačítko DESKTOP
-        self.btn_mode_desktop = self.create_mode_button(_("Oba Displeje"), ICON_DESKTOP, _("Vynutit zapnutí"), "enforce-desktop")
-        hbox_modes.pack_start(self.btn_mode_desktop, True, True, 0)
-
-        # Oddělovač
-        self.page_home.pack_start(Gtk.Separator(), False, False, 10)
+        # hbox_modes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
+        # hbox_modes.set_halign(Gtk.Align.CENTER)
+        # self.page_home.pack_start(hbox_modes, True, True, 0)
+        #
+        # # 1. Tlačítko AUTO
+        # self.btn_mode_auto = self.create_mode_button(_("Automaticky"), ICON_AUTO, _("Senzory"), "automatic-enabled")
+        # hbox_modes.pack_start(self.btn_mode_auto, True, True, 0)
+        #
+        # # 2. Tlačítko PRIMARY
+        # self.btn_mode_primary = self.create_mode_button(_("Jen Hlavní"), ICON_PRIMARY, _("Vypnout spodní"), "enforce-primary-only")
+        # hbox_modes.pack_start(self.btn_mode_primary, True, True, 0)
+        #
+        # # 3. Tlačítko DESKTOP
+        # self.btn_mode_desktop = self.create_mode_button(_("Oba Displeje"), ICON_DESKTOP, _("Vynutit zapnutí"), "enforce-desktop")
+        # hbox_modes.pack_start(self.btn_mode_desktop, True, True, 0)
+        #
+        # # Oddělovač
+        # self.page_home.pack_start(Gtk.Separator(), False, False, 10)
 
         # Sekce pro dočasné režimy
-        lbl_tmp = Gtk.Label(label=_("<span size='x-large' weight='bold'>Dočasné / Prezentační režimy:</span>\n<i>Tyto režimy se automaticky zruší po připojení klávesnice.</i>"))
-        lbl_tmp.set_use_markup(True)
-        self.page_home.pack_start(lbl_tmp, True, True, 0)
+        # lbl_tmp = Gtk.Label(label=_("<span size='x-large' weight='bold'>Dočasné / Prezentační režimy:</span>\n<i>Tyto režimy se automaticky zruší po připojení klávesnice.</i>"))
+        # lbl_tmp.set_use_markup(True)
+        # self.page_home.pack_start(lbl_tmp, True, True, 0)
 
         hbox_tmp_modes = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20)
         hbox_tmp_modes.set_halign(Gtk.Align.CENTER)
         self.page_home.pack_start(hbox_tmp_modes, True, True, 0)
+
+        self.btn_mode_tmp_desktop = self.create_mode_button(_("Desktop"), ICON_TEMP, _("Rozšířená plocha"), "temp-desktop")
+        hbox_tmp_modes.pack_start(self.btn_mode_tmp_desktop, True, True, 0)
+        self.temporary_actions.append(self.btn_mode_tmp_desktop)
 
         self.btn_mode_tmp_mirror = self.create_mode_button(_("Zrcadlení"), ICON_TEMP, _("Dočasné zrcadlení"), "temp-mirror")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_mirror, True, True, 0)
@@ -140,6 +149,13 @@ class AsusSettingsApp(Gtk.Window):
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_primary, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_primary)
 
+        self.btn_mode_tmp_secondary = self.create_mode_button(_("Jen Spodní"), ICON_TEMP, _("Dočasně jen sekundární"), "temp-secondary-only")
+        hbox_tmp_modes.pack_start(self.btn_mode_tmp_secondary, True, True, 0)
+        self.temporary_actions.append(self.btn_mode_tmp_secondary)
+
+        self.btn_mode_tmp_rotated = self.create_mode_button(_("Otočený Desktop"), ICON_TEMP, _("Rozšířená plocha (180°)"), "temp-rotated-desktop")
+        hbox_tmp_modes.pack_start(self.btn_mode_tmp_rotated, True, True, 0)
+        self.temporary_actions.append(self.btn_mode_tmp_rotated)
 
         self.page_home.pack_start(Gtk.Separator(), False, False, 10)
 
@@ -199,6 +215,18 @@ class AsusSettingsApp(Gtk.Window):
 
         lbl_info_user = Gtk.Label(label=_("<i>Ukládá se do ~/.config/asus-screen-toggle/config.conf</i>"), use_markup=True, xalign=0)
         vbox_user.pack_start(lbl_info_user, False, False, 5)
+
+        # Přidat do vbox_user (Karta 1)
+        vbox_user.pack_start(Gtk.Separator(), False, False, 5)
+
+        lbl_pref = Gtk.Label(label=_("<b>Preferovaný režim po odpojení klávesnice:</b>"), use_markup=True, xalign=0)
+        vbox_user.pack_start(lbl_pref, False, False, 0)
+
+        self.combo_preferred = Gtk.ComboBoxText()
+        # "ID", "Zobrazený text"
+        self.combo_preferred.append("automatic-enabled", _("🤖 Automatika (Desktop režim)"))
+        self.combo_preferred.append("automatic-disabled", _("💻 Pouze primární (Neaktivovat spodní)"))
+        vbox_user.pack_start(self.combo_preferred, False, False, 0)
 
         self.user_chk_dbus = Gtk.CheckButton(label=_("Povolit D-Bus ovládání (ENABLE_DBUS)"))
         self.user_chk_signal = Gtk.CheckButton(label=_("Povolit reakci na signály/rotaci (ENABLE_SIGNAL)"))
@@ -317,31 +345,42 @@ class AsusSettingsApp(Gtk.Window):
 
     def update_temporary_modes_availability(self, keyboard_connected: bool):
         enabled = not keyboard_connected
-
-        for action in self.temporary_actions:
-            action.set_sensitive(enabled)
+        all_btns = [
+            # (self.btn_mode_auto, "automatic-enabled"),
+            # (self.btn_mode_primary, "automatic-disabled"), # Změněno ID podle tvé sady
+            (self.btn_mode_tmp_desktop, "temp-desktop"),
+            (self.btn_mode_tmp_primary, "temp-primary-only"),
+            (self.btn_mode_tmp_secondary, "temp-secondary-only"),
+            (self.btn_mode_tmp_mirror, "temp-mirror"),
+            (self.btn_mode_tmp_reverse_mirror, "temp-reverse-mirror"),
+            (self.btn_mode_tmp_rotated, "temp-rotated-desktop")
+        ]
+        for btn, mid in all_btns:
+            # if hasattr(self, btn.get_name()): # Kontrola existence (volitelně)
+            btn.set_sensitive(mid != self.current_mode_in_ui and enabled)
 
     def update_home_ui_state(self, current_mode):
-        """Zvýrazní aktivní tlačítko podle režimu."""
         self.current_mode_in_ui = current_mode
 
-        # Reset stylů (pomocí citlivosti - aktivní režim bude 'insensitive', tedy zamáčknutý)
-        # Nebo lépe: Všechny sensitive, ale aktivnímu dáme jiný styl nebo relief.
-        # Zde použijeme logiku: Aktivní tlačítko je "deaktivované" (nejde na něj znovu kliknout) a vypadá zamáčkle.
+        # Seznam všech tlačítek, která máme na ploše
+        all_btns = [
+            # (self.btn_mode_auto, "automatic-enabled"),
+            # (self.btn_mode_primary, "automatic-disabled"), # Změněno ID podle tvé sady
+            (self.btn_mode_tmp_desktop, "temp-desktop"),
+            (self.btn_mode_tmp_primary, "temp-primary-only"),
+            (self.btn_mode_tmp_secondary, "temp-secondary-only"),
+            (self.btn_mode_tmp_mirror, "temp-mirror"),
+            (self.btn_mode_tmp_reverse_mirror, "temp-reverse-mirror"),
+            (self.btn_mode_tmp_rotated, "temp-rotated-desktop")
+        ]
 
-        for btn, mid in [(self.btn_mode_auto, "automatic-enabled"),
-                         (self.btn_mode_primary, "enforce-primary-only"),
-                         (self.btn_mode_desktop, "enforce-desktop"),
-                         (self.btn_mode_tmp_primary, "temp-primary-only"),
-                         (self.btn_mode_tmp_mirror, "temp-mirror"),
-                         (self.btn_mode_tmp_reverse_mirror, "temp-reverse-mirror")]:
-            if mid == current_mode:
-                btn.set_sensitive(False) # Vizuálně indikuje "vybráno"
-                # btn.get_style_context().add_class("suggested-action") # Alternativa pro GTK CSS
-            else:
-                btn.set_sensitive(True)
+        enabled = not self.is_keyboard_connected()
 
-        # Okamžitá vizuální zpětná vazba v okně
+        for btn, mid in all_btns:
+            # if hasattr(self, btn.get_name()): # Kontrola existence (volitelně)
+            btn.set_sensitive(mid != current_mode and enabled)
+
+        # Bonus: Pokud je klávesnice připojená, dočasné režimy zůstanou insensitive bez ohledu na výběr
         self.update_window_icon(current_mode)
 
     def on_mode_clicked(self, btn):
@@ -475,7 +514,7 @@ class AsusSettingsApp(Gtk.Window):
         if os.path.exists(icon_path):
             try:
                 # self.set_icon_from_file(icon_path)
-                app.set_icon_name(icon_path)
+                self.set_icon_name(icon_path)
             except Exception as e:
                 print(f"Nepodařilo se nastavit ikonu okna: {e}")
 
@@ -517,6 +556,9 @@ class AsusSettingsApp(Gtk.Window):
         # Logika AND detekovaná přímo v UI:
         # Pokud je SYSTÉM False, uživatel nesmí zapnout.
 
+        pref_mode = user_data.get("PREFERRED_MODE", "automatic-enabled")
+        self.combo_preferred.set_active_id(pref_mode)
+
         # DBUS
         user_dbus_val = user_data.get("ENABLE_DBUS", sys_dbus_active)
         self.user_chk_dbus.set_active(user_dbus_val and sys_dbus_active)
@@ -557,6 +599,7 @@ class AsusSettingsApp(Gtk.Window):
             os.makedirs(os.path.dirname(USER_CONFIG_FILE), exist_ok=True)
             with open(USER_CONFIG_FILE, 'w') as f:
                 f.write(_("# Uživatelská konfigurace Asus Screen Toggle\n"))
+                f.write(f"PREFERRED_MODE={self.combo_preferred.get_active_id()}\n")
                 f.write(f"ENABLE_DBUS={'true' if self.user_chk_dbus.get_active() else 'false'}\n")
                 f.write(f"ENABLE_SIGNAL={'true' if self.user_chk_signal.get_active() else 'false'}\n")
         except Exception as e:
