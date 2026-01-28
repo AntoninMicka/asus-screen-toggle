@@ -363,12 +363,12 @@ class AsusAgent:
         menu.append(Gtk.SeparatorMenuItem())
 
 #         --- HLAVNÍ REŽIMY ---
-#         r_auto = Gtk.RadioMenuItem(label=_("🤖🖥️🖥️ Oba displeje automaticky"))
+#         r_auto = Gtk.RadioMenuItem(label=_("🤖🖥️🖥️ Both Displays (Automatic)"))
 #         r_auto.connect("toggled", self._on_mode_change, "automatic-enabled")
 #         menu.append(r_auto)
 #
 #         group = r_auto.get_group()
-#         r_prim = Gtk.RadioMenuItem(label=_("💻 Jen hlavní displej"), group=group[0])
+#         r_prim = Gtk.RadioMenuItem(label=_("💻 Primary Display Only"), group=group[0])
 #         r_prim.connect("toggled", self._on_mode_change, "automatic-disabled")
 #         menu.append(r_prim)
 
@@ -377,7 +377,7 @@ class AsusAgent:
         menu.append(Gtk.SeparatorMenuItem())
 
         # --- DOČASNÉ REŽIMY ---
-        temp_label = Gtk.MenuItem(label=_("🕒 Dočasné režimy (pouze bez klávesnice)"))
+        temp_label = Gtk.MenuItem(label=_("🕒 Temporary Modes (tablet mode only)"))
         temp_label.set_sensitive(False)
         menu.append(temp_label)
 
@@ -389,13 +389,13 @@ class AsusAgent:
             self.temporary_actions.append(m_item)
             return m_item
 
-        m_desktop = add_temp_item(_("🖥️🖥️ Oba displeje (Desktop)"), "temp-desktop")
+        m_desktop = add_temp_item(_("🖥️🖥️ Both Displays (Desktop)"), "temp-desktop")
         group = m_desktop.get_group()
-        m_mirror = add_temp_item(_("🪞 Zrcadlení (Mirror)"), "temp-mirror", group)
-        m_rev_mirror = add_temp_item(_("🙃 Otočené zrcadlení (180°)"), "temp-reverse-mirror", group)
-        m_rot_desk = add_temp_item(_("🔄 Otočený Desktop"), "temp-rotated-desktop", group)
-        m_temp_prim = add_temp_item(_("🚫 Pouze primární"), "temp-primary-only", group)
-        m_temp_sec = add_temp_item(_("📺 Pouze sekundární"), "temp-secondary-only", group)
+        m_mirror = add_temp_item(_("🪞 Mirror"), "temp-mirror", group)
+        m_rev_mirror = add_temp_item(_("🙃 Reverse Mirror (180°)"), "temp-reverse-mirror", group)
+        m_rot_desk = add_temp_item(_("🔄 Reverse Desktop"), "temp-rotated-desktop", group)
+        m_temp_prim = add_temp_item(_("🚫 Primary Only"), "temp-primary-only", group)
+        m_temp_sec = add_temp_item(_("📺 Secondary Only"), "temp-secondary-only", group)
 
         # Nastavení aktivního prvku
         modes_map = {
@@ -418,17 +418,17 @@ class AsusAgent:
         menu.append(Gtk.SeparatorMenuItem())
 
         menu.append(Gtk.SeparatorMenuItem())
-        item_sets = Gtk.MenuItem(label=_("⚙️ Nastavení"))
+        item_sets = Gtk.MenuItem(label=_("⚙️ Settings"))
         item_sets.connect("activate", lambda _: self._launch_settings())
         menu.append(item_sets)
 
-        item_check = Gtk.MenuItem(label=_("Zkontrolovat"))
+        item_check = Gtk.MenuItem(label=_("Check Status"))
         item_check.connect("activate", lambda _: self._run_check())
         menu.append(item_check)
 
         menu.append(Gtk.SeparatorMenuItem())
 
-        item_quit = Gtk.MenuItem(label=_("Ukončit"))
+        item_quit = Gtk.MenuItem(label=_("Quit"))
         item_quit.connect("activate", lambda _: self.Quit())
         menu.append(item_quit)
 

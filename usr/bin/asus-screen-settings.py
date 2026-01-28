@@ -98,10 +98,10 @@ class AsusSettingsApp(Gtk.Window):
         # --- KARTA 0: DOMŮ (Rychlé ovládání) ---
         self.page_home = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
         self.page_home.set_border_width(20)
-        self.notebook.append_page(self.page_home, Gtk.Label(label="Domů"))
+        self.notebook.append_page(self.page_home, Gtk.Label(label="Home"))
 
         # Nadpis
-        lbl_welcome = Gtk.Label(label=_("<span size='x-large' weight='bold'>Rychlé ovládání</span>"))
+        lbl_welcome = Gtk.Label(label=_("<span size='x-large' weight='bold'>Quick Control</span>"))
         lbl_welcome.set_use_markup(True)
         self.page_home.pack_start(lbl_welcome, False, False, 10)
 
@@ -110,15 +110,15 @@ class AsusSettingsApp(Gtk.Window):
         # self.page_home.pack_start(hbox_modes, True, True, 0)
         #
         # # 1. Tlačítko AUTO
-        # self.btn_mode_auto = self.create_mode_button(_("Automaticky"), ICON_AUTO, _("Senzory"), "automatic-enabled")
+        # self.btn_mode_auto = self.create_mode_button(_("Automatic"), ICON_AUTO, _("Senzory"), "automatic-enabled")
         # hbox_modes.pack_start(self.btn_mode_auto, True, True, 0)
         #
         # # 2. Tlačítko PRIMARY
-        # self.btn_mode_primary = self.create_mode_button(_("Jen Hlavní"), ICON_PRIMARY, _("Vypnout spodní"), "enforce-primary-only")
+        # self.btn_mode_primary = self.create_mode_button(_("Primary Only"), ICON_PRIMARY, _("Disable bottom screen"), "enforce-primary-only")
         # hbox_modes.pack_start(self.btn_mode_primary, True, True, 0)
         #
         # # 3. Tlačítko DESKTOP
-        # self.btn_mode_desktop = self.create_mode_button(_("Oba Displeje"), ICON_DESKTOP, _("Vynutit zapnutí"), "enforce-desktop")
+        # self.btn_mode_desktop = self.create_mode_button(_("Both Displays"), ICON_DESKTOP, _("Force enable"), "enforce-desktop")
         # hbox_modes.pack_start(self.btn_mode_desktop, True, True, 0)
         #
         # # Oddělovač
@@ -133,15 +133,15 @@ class AsusSettingsApp(Gtk.Window):
         hbox_tmp_modes.set_halign(Gtk.Align.CENTER)
         self.page_home.pack_start(hbox_tmp_modes, True, True, 0)
 
-        self.btn_mode_tmp_desktop = self.create_mode_button(_("Desktop"), ICON_TEMP, _("Rozšířená plocha"), "temp-desktop")
+        self.btn_mode_tmp_desktop = self.create_mode_button(_("Desktop"), ICON_TEMP, _("Temporary Destop"), "temp-desktop")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_desktop, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_desktop)
 
-        self.btn_mode_tmp_primary = self.create_mode_button(_("Jen Hlavní"), ICON_TEMP, _("Dočasný vypnout spodní"), "temp-primary-only")
+        self.btn_mode_tmp_primary = self.create_mode_button(_("Primary Only"), ICON_TEMP, _("Temporary disable secondary display"), "temp-primary-only")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_primary, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_primary)
 
-        self.btn_mode_tmp_secondary = self.create_mode_button(_("Jen Spodní"), ICON_TEMP, _("Dočasně jen sekundární"), "temp-secondary-only")
+        self.btn_mode_tmp_secondary = self.create_mode_button(_("Secondary Only"), ICON_TEMP, _("Temporary disable primary display"), "temp-secondary-only")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_secondary, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_secondary)
 
@@ -149,22 +149,22 @@ class AsusSettingsApp(Gtk.Window):
         hbox_tmp_modes.set_halign(Gtk.Align.CENTER)
         self.page_home.pack_start(hbox_tmp_modes, True, True, 0)
 
-        self.btn_mode_tmp_mirror = self.create_mode_button(_("Zrcadlení"), ICON_TEMP, _("Dočasné zrcadlení"), "temp-mirror")
+        self.btn_mode_tmp_mirror = self.create_mode_button(_("Mirror"), ICON_TEMP, _("Temporarty mirror"), "temp-mirror")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_mirror, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_mirror)
 
-        self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Otočené zrcadlení"), ICON_TEMP, _("Dočasné otočené zrcadlení"), "temp-reverse-mirror")
+        self.btn_mode_tmp_reverse_mirror = self.create_mode_button(_("Reverse Mirror"), ICON_TEMP, _("Temporarty reverse mirror"), "temp-reverse-mirror")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_reverse_mirror, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_reverse_mirror)
 
-        self.btn_mode_tmp_rotated = self.create_mode_button(_("Otočený Desktop"), ICON_TEMP, _("Rozšířená plocha (180°)"), "temp-rotated-desktop")
+        self.btn_mode_tmp_rotated = self.create_mode_button(_("Reverse Desktop"), ICON_TEMP, _("Temporary Reverse Destop (180°)"), "temp-rotated-desktop")
         hbox_tmp_modes.pack_start(self.btn_mode_tmp_rotated, True, True, 0)
         self.temporary_actions.append(self.btn_mode_tmp_rotated)
 
         self.page_home.pack_start(Gtk.Separator(), False, False, 10)
 
         # Tlačítko Kontrola
-        btn_check = Gtk.Button(label=_("🔄 Spustit okamžitou kontrolu"))
+        btn_check = Gtk.Button(label=_("🔄 Run check now"))
         btn_check.set_property("width-request", 300)
         btn_check.set_halign(Gtk.Align.CENTER)
         btn_check.get_style_context().add_class("suggested-action") # Modré zvýraznění
@@ -174,10 +174,10 @@ class AsusSettingsApp(Gtk.Window):
         # --- KARTA 1: OBECNÉ (Služby a uživatelské chování) ---
         self.page_general = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.page_general.set_border_width(10)
-        self.notebook.append_page(self.page_general, Gtk.Label(label=_("Služby & Config")))
+        self.notebook.append_page(self.page_general, Gtk.Label(label=_("Services & Config")))
 
         # 1. Sekce: Správa Služeb
-        frame_services = Gtk.Frame(label=_("Stav Služeb"))
+        frame_services = Gtk.Frame(label=_("Service Status"))
         self.page_general.pack_start(frame_services, False, False, 0)
 
         vbox_services = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
@@ -190,7 +190,7 @@ class AsusSettingsApp(Gtk.Window):
         self.btn_user_toggle.connect("clicked", self.on_user_service_toggle)
         self.switch_user_enable = Gtk.Switch()
         self.switch_user_enable.connect("notify::active", self.on_user_enable_toggle)
-        vbox_services.pack_start(self.create_service_row(_("Uživatelská služba (Agent)"), self.status_user, self.btn_user_toggle, self.switch_user_enable), False, False, 0)
+        vbox_services.pack_start(self.create_service_row(_("User Service (Agent)"), self.status_user, self.btn_user_toggle, self.switch_user_enable), False, False, 0)
 
         vbox_services.pack_start(Gtk.Separator(), False, False, 5)
         self.status_systray = Gtk.Label(label="...")
@@ -198,7 +198,7 @@ class AsusSettingsApp(Gtk.Window):
         self.btn_systray_toggle.connect("clicked", self.on_systray_service_toggle)
         self.switch_systray_enable = Gtk.Switch()
         self.switch_systray_enable.connect("notify::active", self.on_systray_enable_toggle)
-        vbox_services.pack_start(self.create_service_row(_("Indikátor stauu (Systray)"), self.status_systray, self.btn_systray_toggle, self.switch_systray_enable), False, False, 0)
+        vbox_services.pack_start(self.create_service_row(_("Status Indicator (Systray)"), self.status_systray, self.btn_systray_toggle, self.switch_systray_enable), False, False, 0)
 
         vbox_services.pack_start(Gtk.Separator(), False, False, 5)
 
@@ -208,7 +208,7 @@ class AsusSettingsApp(Gtk.Window):
         self.btn_system_toggle.connect("clicked", self.on_system_service_toggle)
         self.switch_system_enable = Gtk.Switch()
         self.switch_system_enable.connect("notify::active", self.on_system_enable_toggle)
-        vbox_services.pack_start(self.create_service_row(_("Systémová služba (Init)"), self.status_system, self.btn_system_toggle, self.switch_system_enable), False, False, 0)
+        vbox_services.pack_start(self.create_service_row(_("System Service (Init)"), self.status_system, self.btn_system_toggle, self.switch_system_enable), False, False, 0)
 
         # 2. Sekce: Uživatelská konfigurace
         frame_user = Gtk.Frame(label=_("Uživatelská konfigurace"))
@@ -232,8 +232,8 @@ class AsusSettingsApp(Gtk.Window):
         self.combo_preferred.append("automatic-disabled", _("💻 Pouze primární (Neaktivovat spodní)"))
         vbox_user.pack_start(self.combo_preferred, False, False, 0)
 
-        self.user_chk_dbus = Gtk.CheckButton(label=_("Povolit D-Bus ovládání (ENABLE_DBUS)"))
-        self.user_chk_signal = Gtk.CheckButton(label=_("Povolit reakci na signály/rotaci (ENABLE_SIGNAL)"))
+        self.user_chk_dbus = Gtk.CheckButton(label=_("Enable D-Bus control (ENABLE_DBUS)"))
+        self.user_chk_signal = Gtk.CheckButton(label=_("Enable signal/rotation handling (ENABLE_SIGNAL)"))
 
         vbox_user.pack_start(self.user_chk_dbus, False, False, 0)
         vbox_user.pack_start(self.user_chk_signal, False, False, 0)
@@ -242,16 +242,16 @@ class AsusSettingsApp(Gtk.Window):
         # --- KARTA 2: HARDWARE (Systémová konfigurace) ---
         self.page_hw = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.page_hw.set_border_width(10)
-        self.notebook.append_page(self.page_hw, Gtk.Label(label=_("Hardware (Systém)")))
+        self.notebook.append_page(self.page_hw, Gtk.Label(label=_("Hardware (System)")))
 
         lbl_hw_info = Gtk.Label(label=_("<i>Tyto změny se zapíší do /etc/asus-screen-toggle.conf (vyžaduje root).</i>"), use_markup=True, xalign=0)
         self.page_hw.pack_start(lbl_hw_info, False, False, 0)
 
         # Checkbox pro systémové chování
-        self.sys_chk_systemd = Gtk.CheckButton(label=_("Povolit Systemd ovládání (ENABLE_SYSTEMD_CALL)"))
-        self.sys_chk_dbus = Gtk.CheckButton(label=_("Povolit D-Bus ovládání (ENABLE_DBUS)"))
-        self.sys_chk_signal = Gtk.CheckButton(label=_("Povolit reakci na signály/rotaci (ENABLE_SIGNAL)"))
-        self.sys_chk_direct = Gtk.CheckButton(label=_("Povolit přímé volání z Udev (ENABLE_DIRECT_CALL)"))
+        self.sys_chk_systemd = Gtk.CheckButton(label=_("Enable Systemd control (ENABLE_SYSTEMD_CALL)"))
+        self.sys_chk_dbus = Gtk.CheckButton(label=_("Enable D-Bus control (ENABLE_DBUS)"))
+        self.sys_chk_signal = Gtk.CheckButton(label=_("Enable signal/rotation handling (ENABLE_SIGNAL)"))
+        self.sys_chk_direct = Gtk.CheckButton(label=_("Enable direct cal from Udev (ENABLE_DIRECT_CALL)"))
         self.page_hw.pack_start(self.sys_chk_dbus, False, False, 0)
         self.page_hw.pack_start(self.sys_chk_signal, False, False, 0)
         self.page_hw.pack_start(self.sys_chk_direct, False, False, 0)
@@ -271,11 +271,11 @@ class AsusSettingsApp(Gtk.Window):
         self.entry_lid = Gtk.Entry()
 
         row = 0
-        self.add_config_row(grid_hw, row, _("Vendor ID:"), self.entry_vendor, _("Např. 0b05")); row+=1
-        self.add_config_row(grid_hw, row, _("Product ID:"), self.entry_product, _("Např. 1bf2")); row+=1
-        self.add_config_row(grid_hw, row, _("Hlavní displej:"), self.entry_primary, _("Např. eDP-1")); row+=1
-        self.add_config_row(grid_hw, row, _("Sekundární displej:"), self.entry_secondary, _("Např. eDP-2")); row+=1
-        self.add_config_row(grid_hw, row, _("Senzor víka:"), self.entry_lid, _("Např. LID nebo LID0")); row+=1
+        self.add_config_row(grid_hw, row, _("Vendor ID:"), self.entry_vendor, _("example 0b05")); row+=1
+        self.add_config_row(grid_hw, row, _("Product ID:"), self.entry_product, _("example 1bf2")); row+=1
+        self.add_config_row(grid_hw, row, _("Primary display:"), self.entry_primary, _("example eDP-1")); row+=1
+        self.add_config_row(grid_hw, row, _("Secondary display:"), self.entry_secondary, _("example eDP-2")); row+=1
+        self.add_config_row(grid_hw, row, _("Lid senzor:"), self.entry_lid, _("example LID or LID0")); row+=1
 
         # Propojení checkboxů pro okamžitou odezvu v UI
         self.sys_chk_dbus.connect("toggled", lambda w: self.user_chk_dbus.set_sensitive(w.get_active()))
@@ -285,11 +285,11 @@ class AsusSettingsApp(Gtk.Window):
         bbox = Gtk.ButtonBox(layout_style=Gtk.ButtonBoxStyle.END)
         main_layout.pack_end(bbox, False, False, 0)
 
-        btn_refresh = Gtk.Button(label=_("Obnovit"))
+        btn_refresh = Gtk.Button(label=_("Refresh"))
         btn_refresh.connect("clicked", self.refresh_all)
         bbox.add(btn_refresh)
 
-        btn_save = Gtk.Button(label=_("Uložit vše"))
+        btn_save = Gtk.Button(label=_("Save All"))
         btn_save.get_style_context().add_class("suggested-action")
         btn_save.connect("clicked", self.on_save_clicked)
         bbox.add(btn_save)
@@ -505,11 +505,11 @@ class AsusSettingsApp(Gtk.Window):
         switch.handler_unblock_by_func(self.on_user_enable_toggle if switch == self.switch_user_enable else self.on_system_enable_toggle if switch == self.switch_system_enable else self.on_systray_enable_toggle)
 
         if active:
-            label.set_markup(_("<span foreground='green'><b>Běží</b></span>"))
-            button.set_label(_("Zastavit"))
+            label.set_markup(_("<span foreground='green'><b>Running</b></span>"))
+            button.set_label(_("Stop"))
         else:
-            label.set_markup(_("<span foreground='red'>Zastaveno</span>"))
-            button.set_label(_("Spustit"))
+            label.set_markup(_("<span foreground='red'>Stopped</span>"))
+            button.set_label(_("Start"))
 
     def update_window_icon(self, mode):
         icon_name = self.icon_map.get(mode, "icon-green.svg")
