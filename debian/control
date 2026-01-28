@@ -1,5 +1,6 @@
 Source: asus-screen-toggle
 Section: utils
+Priority: optional
 Maintainer: Antonin Micka <antonin.micka@gmail.com>
 Build-Depends: debhelper-compat (= 13),
                gettext,
