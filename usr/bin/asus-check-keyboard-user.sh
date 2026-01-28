@@ -172,26 +172,26 @@ if [[ "$user" == "sddm" ]]; then exit 0; fi
 
 # === X11 ===
 if [[ "$type" == "x11" ]]; then
-    if [[ "$FORCE_MIRROR" == "true" ]]; then
-        echo "$(_ "Aplikuji: Zrcadlení (X11)")"
-        if [[ "$FORCE_REVERSE" == "true" ]]; then
-            xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate inverted --output ${SECONDARY_DISPLAY_NAME} --rotate normal --auto --same-as ${PRIMARY_DISPLAY_NAME}
-        else
-            xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --output ${SECONDARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --auto --same-as ${PRIMARY_DISPLAY_NAME}
-        fi
-        exit 0
-    fi
-    # Zde používáme naši vypočtenou proměnnou ENABLE_BOTTOM_SCREEN
-    if [[ "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
+    if [[ "$ENABLE_PRIMARY_SCREEN" == "true" &&  "$ENABLE_BOTTOM_SCREEN" == "true" && "$FORCE_MIRROR" == "true" ]]; then
+        xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${PRIMARY_DISPLAY_ROTATION} --auto \
+            --output ${SECONDARY_DISPLAY_NAME} --rotate ${SECONDARY_DISPLAY_ROTATION} --auto --same-as ${PRIMARY_DISPLAY_NAME}
+    elif [[ "$ENABLE_PRIMARY_SCREEN" == "true" && "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
         echo "$(_ "Aplikuji: Single Screen (X11)")"
-        xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate normal --output ${SECONDARY_DISPLAY_NAME} --off
+        xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${PRIMARY_DISPLAY_ROTATION} --auto --output ${SECONDARY_DISPLAY_NAME} --off
+    elif [[ "$ENABLE_PRIMARY_SCREEN" == "false" && "$ENABLE_BOTTOM_SCREEN" == "true" ]]; then
+        echo "$(_ "Aplikuji: Single Screen (X11)")"
+        xrandr --output ${PRIMARY_DISPLAY_NAME} --off --output ${SECONDARY_DISPLAY_NAME} --rotate ${SECONDARY_DISPLAY_ROTATION} --auto
     else
         printf "$(_ "Aplikuji: Dual Screen (X11) - %s")\n" "$DISPLAY_ROTATION"
         case "$DISPLAY_ROTATION" in
-            *left*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --right-of ${SECONDARY_DISPLAY_NAME} --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} ;;
-            *right*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --left-of ${SECONDARY_DISPLAY_NAME} --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} ;;
-            *inverted*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --below ${SECONDARY_DISPLAY_NAME} --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} ;;
-            *normal*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --above ${SECONDARY_DISPLAY_NAME} --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} ;;
+            *left*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${PRIMARY_DISPLAY_ROTATION} --right-of ${SECONDARY_DISPLAY_NAME} --auto \
+                --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} ;;
+            *right*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${PRIMARY_DISPLAY_ROTATION} --left-of ${SECONDARY_DISPLAY_NAME}  --auto \
+                --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} ;;
+            *inverted*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${PRIMARY_DISPLAY_ROTATION} --below ${SECONDARY_DISPLAY_NAME} --auto \
+                --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} ;;
+            *normal*) xrandr --output ${PRIMARY_DISPLAY_NAME} --rotate ${PRIMARY_DISPLAY_ROTATION} --above ${SECONDARY_DISPLAY_NAME}  --auto \
+                --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} ;;
         esac
     fi
     exit 0
@@ -267,32 +267,26 @@ fi
 
 # === Wayland (Generic / wlroots) ===
 if [[ "$type" == "wayland" ]]; then
-    if [[ "$FORCE_MIRROR" == "true" ]]; then
-        echo "$(_ "Aplikuji: Zrcadlení (Wlr)")"
-        if [[ "$FORCE_REVERSE" == "true" ]]; then
-            wlr-randr --output ${PRIMARY_DISPLAY_NAME} --rotate inverted \
-                --output ${SECONDARY_DISPLAY_NAME} --auto --rotate normal --same-as ${PRIMARY_DISPLAY_NAME}
-        else
-            wlr-randr --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} \
-                --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} --same-as ${PRIMARY_DISPLAY_NAME}
-        fi
-        exit 0
-    fi
-
-    if [[ "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
+    if [[ "$ENABLE_PRIMARY_SCREEN" == "true" &&  "$ENABLE_BOTTOM_SCREEN" == "true" && "$FORCE_MIRROR" == "true" ]]; then
+        wlr-randr --output ${PRIMARY_DISPLAY_NAME} --auto --rotate ${PRIMARY_DISPLAY_ROTATION} \
+            --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} --same-as ${PRIMARY_DISPLAY_NAME}
+    elif [[ "$ENABLE_PRIMARY_SCREEN" == "true" && "$ENABLE_BOTTOM_SCREEN" == "false" ]]; then
         echo "$(_ "Aplikuji: Single Screen (Wlr)")"
-        wlr-randr --output ${PRIMARY_DISPLAY_NAME} --rotate normal --output ${SECONDARY_DISPLAY_NAME} --off
+        wlr-randr --output ${PRIMARY_DISPLAY_NAME} --auto --rotate ${PRIMARY_DISPLAY_ROTATION} --output ${SECONDARY_DISPLAY_NAME} --off
+    elif [[ "$ENABLE_PRIMARY_SCREEN" == "false" && "$ENABLE_BOTTOM_SCREEN" == "true" ]]; then
+        echo "$(_ "Aplikuji: Single Screen (Wlr)")"
+        wlr-randr --output ${PRIMARY_DISPLAY_NAME} --off --output ${SECONDARY_DISPLAY_NAME} --rotate ${SECONDARY_DISPLAY_ROTATION} --auto
     else
         printf "$(_ "Aplikuji: Dual Screen (Wlr) - %s")\n" "$DISPLAY_ROTATION"
         case "$DISPLAY_ROTATION" in
-            *left*) wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} \
-                --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --right-of ${SECONDARY_DISPLAY_NAME} ;;
-            *right*) wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} \
-                --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --left-of ${SECONDARY_DISPLAY_NAME} ;;
-            *inverted*) wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} \
-                --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --below ${SECONDARY_DISPLAY_NAME} ;;
-            *normal*) wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${DISPLAY_ROTATION} \
-                --output ${PRIMARY_DISPLAY_NAME} --rotate ${DISPLAY_ROTATION} --above ${SECONDARY_DISPLAY_NAME} ;;
+            *left*) wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} \
+                --output ${PRIMARY_DISPLAY_NAME} --auto --rotate ${PRIMARY_DISPLAY_ROTATION} --right-of ${SECONDARY_DISPLAY_NAME} ;;
+            *right*) wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} \
+                --output ${PRIMARY_DISPLAY_NAME} --auto --rotate ${PRIMARY_DISPLAY_ROTATION} --left-of ${SECONDARY_DISPLAY_NAME} ;;
+            *inverted*) wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} \
+                --output ${PRIMARY_DISPLAY_NAME} --auto --rotate ${PRIMARY_DISPLAY_ROTATION} --below ${SECONDARY_DISPLAY_NAME} ;;
+            *normal*) wlr-randr --output ${SECONDARY_DISPLAY_NAME} --auto --rotate ${SECONDARY_DISPLAY_ROTATION} \
+                --output ${PRIMARY_DISPLAY_NAME} --auto --rotate ${PRIMARY_DISPLAY_ROTATION} --above ${SECONDARY_DISPLAY_NAME} ;;
         esac
     fi
     exit 0
