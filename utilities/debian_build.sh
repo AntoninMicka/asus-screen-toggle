@@ -39,8 +39,9 @@ else
 fi
 
 # 4. Sestavení balíčku pomocí debuild
-# -sa vynutí zahrnutí původního zdroje (orig.tar.gz), což je nutné pro první upload na Mentors
-echo "Spouštím debuild..."
-debuild $BUILD_OPTS -sa
+# -A  zajistí, že se staví pouze architekturově nezávislé balíčky (all)
+# -sa vynutí zahrnutí orig.tar.gz (nutné pro nahrání na Mentors)
+echo "Spouštím debuild pro architekturu 'all'..."
+debuild $BUILD_OPTS -S -sa
 
 echo "--- Hotovo! Balíčky najdete v nadřazeném adresáři. ---"

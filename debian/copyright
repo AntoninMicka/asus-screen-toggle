@@ -1,5 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: asus-screen-toggle
+Upstream-Contact: Antonin Micka <antonin.micka@gmail.com>
 Source: https://github.com/antoninmicka/asus-screen-toggle
 
 Files: *
