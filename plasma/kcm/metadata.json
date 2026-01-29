@@ -1,0 +1,13 @@
+{
+    "KPlugin": {
+        "Authors": [ { "Name": "Antonin Micka" } ],
+        "Category": "Hardware/Display",
+        "Description": "Set default behavior for Asus ZenBook Duo screens",
+        "Icon": "preferences-desktop-display",
+        "Id": "kcm_asus_screentoggle",
+        "Name": "Asus Screen Behavior",
+        "Version": "1.0"
+    },
+    "KPackageStructure": "KPackage/GenericQML",
+    "X-Plasma-MainScript": "ui/main.qml"
+}

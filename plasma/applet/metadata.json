@@ -1,0 +1,20 @@
+{
+    "KPackageStructure": "Plasma/Applet",
+    "KPlugin": {
+        "Authors": [
+            {
+                "Email": "antonin.micka@email.cz",
+                "Name": "Antonin Micka"
+            }
+        ],
+        "Category": "Hardware Control",
+        "Description": "Asus Screen Control",
+        "Icon": "input-tablet",
+        "Id": "org.asus.screentoggle",
+        "Name": "Asus Screen Toggle",
+        "Version": "2.1"
+    },
+    "X-Plasma-API": "declarativeappletscript",
+    "X-Plasma-MainScript": "ui/main.qml",
+    "X-Plasma-API-Minimum-Version": "6.0"
+}

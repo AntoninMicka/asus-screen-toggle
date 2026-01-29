@@ -24,6 +24,7 @@ B_USER := $(BUILD_DIR)/lib/systemd/user
 # Instalace
 DESTDIR ?=
 PREFIX  ?= /usr
+PLASMA_DEST = $(DESTDIR)$(PREFIX)/share/plasma/plasmoids/org.asus.screentoggle
 
 # -------------------------
 # Build config
@@ -75,7 +76,7 @@ else
 endif
 
 # -------------------------
-# Install target (Klíčové pro Debian)
+# Install target
 # -------------------------
 .PHONY: install
 install: all
@@ -88,7 +89,7 @@ install: all
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
 	install -d $(DESTDIR)$(PREFIX)/share/man/cs/man1
 
-	# 1. Instalace binárek BEZ PŘÍPON (řeší Lintian chyby a .desktop soubory)
+	# 1. Instalace binárek BEZ PŘÍPON
 	install -m 0755 $(B_BIN)/asus-check-keyboard-system.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-system
 	install -m 0755 $(USR_DIR)/bin/asus-check-keyboard-genrules.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-genrules
 	install -m 0755 $(USR_DIR)/bin/asus-check-keyboard-user.sh $(DESTDIR)$(PREFIX)/bin/asus-check-keyboard-user
@@ -101,11 +102,11 @@ install: all
 	install -m 0644 $(USR_DIR)/lib/systemd/system/*.service $(DESTDIR)$(PREFIX)/lib/systemd/system/
 	install -m 0644 $(B_USER)/*.service $(DESTDIR)$(PREFIX)/lib/systemd/user/
 
-	# 3. Manuálové stránky (oprava cest pro Debian)
+	# 3. Manuálové stránky
 	install -m 0644 $(USR_DIR)/share/man/man1/*.1 $(DESTDIR)$(PREFIX)/share/man/man1/
 	# Ošetření případu, kdy by adresář cs/ neexistoval
 	if [ -d $(USR_DIR)/share/man/man1/cs ]; then \
-	    install -m 0644 $(USR_DIR)/share/man/man1/cs/*.1 $(DESTDIR)$(PREFIX)/share/man/cs/man1/; \
+		install -m 0644 $(USR_DIR)/share/man/man1/cs/*.1 $(DESTDIR)$(PREFIX)/share/man/cs/man1/; \
 	fi
 
 	# 4. Ostatní data a template
@@ -113,6 +114,12 @@ install: all
 	cp -r $(USR_DIR)/share/applications $(DESTDIR)$(PREFIX)/share/
 	cp -r $(USR_DIR)/share/asus-screen-toggle/*.svg $(DESTDIR)$(PREFIX)/share/asus-screen-toggle/
 	cp -r $(USR_DIR)/lib/asus-screen-toggle/* $(DESTDIR)$(PREFIX)/lib/asus-screen-toggle/
+
+	# 5. Plasma Widget
+	mkdir -p $(PLASMA_DEST)
+	cp -r plasma/applet/* $(PLASMA_DEST)/
+	# Zajištění čitelnosti pro všechny uživatele (kritické pro Plasmu)
+	chmod -R a+rX $(PLASMA_DEST)
 
 # -------------------------
 # Sanity checks
